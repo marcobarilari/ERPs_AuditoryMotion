@@ -47,9 +47,9 @@ freq = 44100;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                                               % 1 Cycle = one inward and outward motion together
 %% Experimental Design
-soundfiles = {'Static','mot_LRRL', 'mot_RLLR', 'Static_T',...
+soundfiles = {'static','mot_LRRL', 'mot_RLLR', 'static_T',...
               'mot_LRRL_T', 'mot_RLLR_T'};                                      % order IS important
-condition = {'Static','motion','motion','Static','motion','motion'};
+condition = {'static','motion','motion','static','motion','motion'};
 isTarget = [0 0 0 1 1 1];
 
 Event_order= getTrialSeq(numEvents, percTarget);                                %pseudorandomized events order: 2 MOTION + 1 static + 10% of targers
@@ -130,7 +130,7 @@ playTime = zeros(1,numEvents);
 
 
 
-for iEvent = 1:5 %numEvents
+for iEvent = 1:15 %numEvents
     startEvent = GetSecs();
     timeLogger(iEvent).startTime = GetSecs - experimentStartTime;                       % Get the start time of the event
     timeLogger(iEvent).condition = condition(Event_order(iEvent));                      % Get the condition of the event (motion or static)
