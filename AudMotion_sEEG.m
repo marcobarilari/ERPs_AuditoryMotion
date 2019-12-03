@@ -225,7 +225,9 @@ Experiment_duration = myTotalSecs - experimentStartTime;
 %% Save a mat Log file
 % Onsets & durations are saved in seconds.
 save(['logFileFull_',SubjName,'.mat']);
-save(['logFile_',SubjName,'.mat'], 'names','onsets','durations','ends','targets','responseTime','responseKey','targetTime','Experiment_duration','playTime');
+save(['logFile_',SubjName,'.mat'], 'names','onsets','durations','ends','responseTime','responseKey','Experiment_duration','playTime');
+%targets? targetTime?
+%save(['logFile_',SubjName,'.mat'], 'names','onsets','durations','ends','targets','responseTime','responseKey','targetTime','Experiment_duration','playTime');
 
 fprintf('Sequence IS OVER!!\n');
 %end
