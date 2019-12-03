@@ -18,7 +18,7 @@ fprintf('Connected Device is %s \n\n',device);
 % Get the subject Name
 SubjName = input('Subject Name: ','s');
        if isempty(SubjName)
-          SubjName = 'trial';
+          SubjName = 'test';
        end
 
 fprintf('Auditory ERPs \n\n')
@@ -45,7 +45,7 @@ ibi = 1.5;                                                                      
 
 
  
-nrBlocks = 24;                                                                 % Number of trials , where 1 block = 1 block of all conditions (static and motion)
+nrBlocks = 30;                                                                 % Number of trials , where 1 block = 1 block of all conditions (static and motion)
 numEventsPerBlock = 1;
 range_targets = [0 2];                                                         % range of number of targets in each block (from 2 to 5 targets in each block)
 
@@ -67,34 +67,32 @@ numBlocks = length(names);                                                     %
 
 %% InitializePsychAudio;
 InitializePsychSound(1);
-
+%OPEN AUDIO PORTS
+startPsych = GetSecs();
+phandle = PsychPortAudio('Open',[],[],1,freq,2);
 
 soundfiles = {'LRRL', 'RLLR', 'Static','LRRL_T', 'RLLR_T', 'Static_T'};
 rndstim_order = repmat(1:6,1,4); %MARCO_FUNCTION; %SHUFFLE 2 MOTION + 1 static + 10% of targers
 Numsounds = length(rndstim_order);
-    
+%fileName=fullfile('stimuli','Static','Static.wav');
     
 %load the buffer
 for i = 1:Numsounds
     
-    chosen_dir{i} = directNames{rndstim_order(i)};
+    chosen_dir{i} = [SubjName,'_',soundfiles{rndstim_order(i)},'.wav'];
     %chosen_dirName = chosen_dir{i};
-    filename = sprintf(soundname,subject,sep,chosen_dir{i}); % %s%s15bursts_static_%s
+    filename = fullfile('stimuli',SubjName,chosen_dir{i}); 
     [SoundData{i},~]=audioread(filename);
     SoundData{i} = SoundData{i}';
     
 end
-endPsych = GetSecs - startPsych;
+endPsych = GetSecs - startPsych; % not sure if we need this
 
 
 
 
 
 %[soundData, freq] = loadAudioFiles(SubjName);
-
-%OPEN AUDIO PORTS
-startPsych = GetSecs();
-phandle = PsychPortAudio('Open',[],[],1,freq,2);
 %PsychPortAudio('FillBuffer',phandle,soundData_static);
 %fprintf('\nstatic wav file loaded. \n')
 
