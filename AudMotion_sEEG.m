@@ -74,15 +74,22 @@ startPsych = GetSecs();
 phandle = PsychPortAudio('Open',[],[],1,freq,2);
 %HideCursor;
 
-soundfiles = {'mot_LRRL', 'mot_RLLR', 'Static','mot_LRRL_T', 'mot_RLLR_T', 'Static_T'};
-[rndstim_names, rndstim_order]= getTrialSeq(numEvents, percTarget); %repmat(1:6,1,4); %SHUFFLE 2 MOTION + 1 static + 10% of targers
+soundfiles = {'Static','mot_LRRL', 'mot_RLLR', 'Static_T','mot_LRRL_T', 'mot_RLLR_T'}; % order IS important
+% static 1
+% mot_LRRL 2
+% mot_RLLR 3
+% Static_T 4
+% mot_LRRL_T 5
+% mot_RLLR_T 6
+rndstim_order= getTrialSeq(numEvents, percTarget); %repmat(1:6,1,4); %SHUFFLE 2 MOTION + 1 static + 10% of targers
+%[rndstim_names, rndstim_order]= getTrialSeq(numEvents, percTarget); 
 Numsounds = length(rndstim_order);
-
+stim_length = length(soundfiles);
     
 %load the buffer
-for i = 1:Numsounds
+for i = 1:stim_length
     
-    chosen_dir{i} = [SubjName,'_',rndstim_names{i},'.wav'];
+    chosen_dir{i} = [soundfiles{i},'.wav'];
     %chosen_dirName = chosen_dir{i};
     filename = fullfile('stimuli',SubjName,chosen_dir{i}); 
     [SoundData{i},~]=audioread(filename);
