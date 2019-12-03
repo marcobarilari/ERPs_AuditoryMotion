@@ -45,9 +45,11 @@ ibi = 1.5;                                                                      
 
 
  
-nrBlocks = 30;                                                                 % Number of trials , where 1 block = 1 block of all conditions (static and motion)
-numEventsPerBlock = 1;
-range_targets = [0 2];                                                         % range of number of targets in each block (from 2 to 5 targets in each block)
+nrBlocks = 120;                                                                 % Number of trials , where 1 block = 1 block of all conditions (static and motion)
+percTarget = 10;                                                                % Percentage of trials as target
+%numEventsPerBlock = 1;
+%range_targets = [0 2];                                                         % range of number of targets in each block (from 2 to 5 targets in each block)
+freq = 44100;
 
 mirror_width= 11.5;                                                            % Width (x-axis) of the mirror (in cm)
 v_dist      = 14;                                                              % viewing distance from the mirror (cm) "in this script we use mirror"
@@ -60,9 +62,9 @@ fix_r       = 0.15;                                                            %
 % function "experimental_design" while assign the blocks, conditions, and 
 % the number of targets that will be used in the AUDITORY motion EXP
 %[names,targets,condition] = experimental_design(nrBlocks,range_targets);  
-[names,targets,condition,directions,isTarget] = experimental_design(nrBlocks,numEventsPerBlock,range_targets) ;
+%[names,targets,condition,directions,isTarget] = experimental_design(nrBlocks,numEventsPerBlock,range_targets) ;
 % WHAT WE NEED IS SHUFFLE THE LRRL RLLR AND STATIC AAAND ADD 10% TARGETS
-numBlocks = length(names);                                                     % Create a variable with the number of blocks in the whole experiment
+%numBlocks = length(names);                                                     % Create a variable with the number of blocks in the whole experiment
 
 
 %% InitializePsychAudio;
@@ -70,9 +72,10 @@ InitializePsychSound(1);
 %OPEN AUDIO PORTS
 startPsych = GetSecs();
 phandle = PsychPortAudio('Open',[],[],1,freq,2);
+HideCursor;
 
-soundfiles = {'LRRL', 'RLLR', 'Static','LRRL_T', 'RLLR_T', 'Static_T'};
-rndstim_order = repmat(1:6,1,4); %MARCO_FUNCTION; %SHUFFLE 2 MOTION + 1 static + 10% of targers
+soundfiles = {'mot_LRRL', 'mot_RLLR', 'Static','mot_LRRL_T', 'mot_RLLR_T', 'Static_T'};
+rndstim_order = getTrialSeq(nrBlocks, percTarget); %repmat(1:6,1,4); %SHUFFLE 2 MOTION + 1 static + 10% of targers
 Numsounds = length(rndstim_order);
 %fileName=fullfile('stimuli','Static','Static.wav');
     
@@ -91,28 +94,8 @@ endPsych = GetSecs - startPsych; % not sure if we need this
 
 
 
-
-%[soundData, freq] = loadAudioFiles(SubjName);
-%PsychPortAudio('FillBuffer',phandle,soundData_static);
-%fprintf('\nstatic wav file loaded. \n')
-
-%% LOAD the BUFFER
-
-
-%% PTB Setup
-screenNumber = max(Screen('Screens'));
-%screenNumber = 0;
-Screen('Preference', 'SkipSyncTests', 2);
-[w, winRect, xMid, yMid] = startPTB(screenNumber, 1, [128 128 128]);
-HideCursor;
-
-
-
-%% TRIGGER - OR NOT TRIGGER
+%% TRIGGER - OR NOT TRIGGER - HOW TRIGGER WORKS
 if strcmp(device,'trial')
-    DrawFormattedText(w,'Waiting For Trigger',...
-        'center', 'center', black);
-    Screen('Flip', w);
     
     % press key
     KbWait();
@@ -124,7 +107,7 @@ if strcmp(device,'trial')
 % open Serial Port "SerPor" - COM1 (BAUD RATE: 11520) %
 % TRIGGER EEG?
 elseif strcmp(device,'eeg')
-    DrawFormattedText(w,'Waiting For Trigger','center', 'center', black);
+    fprintf('Waiting For Trigger...');
     Screen('Flip', w);
  %   SerPor = MT_portAndTrigger;
     Screen('Flip', w);

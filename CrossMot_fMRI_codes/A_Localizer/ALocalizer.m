@@ -1,110 +1,110 @@
 %function mirror_runMTLocalizer
-
-% Original Script Written by Sam Weiller to localize MT+/V5
-% Adapted by M.Rezk to localize MT/MST (Huk,2002)
-% simplify the ALocaliser fmri experiment for ERPs
-
 clear all;
 clc
 
-%% set trial or real experiment
-% device = 'eeg';
-device = 'trial';
+%8 trials =  370 sec (without trigger) =6.17 minutes
+% if TR =2 Sec.    370 sec / 2 (TR) = 185 TRs (without trigger) + 4 = 189 TRs  
+% if TR =2.5 Sec.  370 sec / 2 (TR) = 148 TRs (without trigger) + 4 = 152 TRs 
+
+%% To correct for the y-axis problem inside the scanner
+%  where the lower 1/3 of the screen is not appearing because of coil indicate which device the script is running on, on PC, the middle of the
+%  y axis will be the middle of the screen, on the Scanner, the middle of y-axis will be the middle of the upper 2/3 of the screen, because the
+%  lower 1/3 is not visible due to the coil in the scanner.
+% device = 'Scanner';
+device = 'PC';
 
 fprintf('Connected Device is %s \n\n',device);
 
-
+% Original Script Written by Sam Weiller to localize MT+/V5
+% Adapted by M.Rezk to localize MT/MST (Huk,2002)
 %% Start me up
 % Get the subject Name
 SubjName = input('Subject Name: ','s');
        if isempty(SubjName)
-          SubjName = 'test';
+          SubjName = 'trial';
        end
 
-fprintf('Auditory ERPs \n\n')
+fprintf('Auditory MT Localizer \n\n')
 
 %% Experiment Parametes
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-initial_wait = 1;                                                              % seconds to have a blank screen at the beginning, the scans will be discarded until                                                                              % the magnetic field is homogenous                                                                         
-finalWait = 1;
-
+initial_wait = 5;                                                              % seconds to have a blank screen at the beginning, the scans will be discarded until                                                                              % the magnetic field is homogenous                                                                         
+finalWait = 5;
 %blockDur = 16;                                                                 % Block duration [should be a multiple of osc (below)]                                                                               
-ISI = 0.0;             % Interstimulus Interval between events in the block.
-ibi = 1.5;                                                                       % Inter-block duration in seconds (time between blocks)
-% MAKE gaussian distribution of IBI later on.
-
-
-
-
-
-
-
-
-
-
-
-
- 
-nrBlocks = 30;                                                                 % Number of trials , where 1 block = 1 block of all conditions (static and motion)
-numEventsPerBlock = 1;
+ISI = 0.1;             % Interstimulus Interval between events in the block.
+ibi = 6;                                                                       % Inter-block duration in seconds (time between blocks)
+nrBlocks = 14;                                                                 % Number of trials , where 1 block = 1 block of all conditions (static and motion)
+numEventsPerBlock = 12;
 range_targets = [0 2];                                                         % range of number of targets in each block (from 2 to 5 targets in each block)
 
 mirror_width= 11.5;                                                            % Width (x-axis) of the mirror (in cm)
 v_dist      = 14;                                                              % viewing distance from the mirror (cm) "in this script we use mirror"
 fix_r       = 0.15;                                                            % radius of fixation point (deg)
 
-%Audiofile_duration = 1 ;                                                      % Length of the Audio file (in seconds)
+%Audiofile_duration = 16 ;                                                      % Length of the Audio file (in seconds)
 %Stop_audiofile = blockDur ;                                                    % Let the audio file play for x Seconds
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                                               % 1 Cycle = one inward and outward motion together
 %% Experimental Design
 % function "experimental_design" while assign the blocks, conditions, and 
-% the number of targets that will be used in the AUDITORY motion EXP
+% the number of targets that will be used in the motion localizer
 %[names,targets,condition] = experimental_design(nrBlocks,range_targets);  
 [names,targets,condition,directions,isTarget] = experimental_design(nrBlocks,numEventsPerBlock,range_targets) ;
-% WHAT WE NEED IS SHUFFLE THE LRRL RLLR AND STATIC AAAND ADD 10% TARGETS
+
 numBlocks = length(names);                                                     % Create a variable with the number of blocks in the whole experiment
 
 
 %% InitializePsychAudio;
 InitializePsychSound(1);
-%OPEN AUDIO PORTS
-startPsych = GetSecs();
+
+[soundData, freq] = loadAudioFiles(SubjName);
 phandle = PsychPortAudio('Open',[],[],1,freq,2);
-
-soundfiles = {'LRRL', 'RLLR', 'Static','LRRL_T', 'RLLR_T', 'Static_T'};
-rndstim_order = repmat(1:6,1,4); %MARCO_FUNCTION; %SHUFFLE 2 MOTION + 1 static + 10% of targers
-Numsounds = length(rndstim_order);
-%fileName=fullfile('stimuli','Static','Static.wav');
-    
-%load the buffer
-for i = 1:Numsounds
-    
-    chosen_dir{i} = [SubjName,'_',soundfiles{rndstim_order(i)},'.wav'];
-    %chosen_dirName = chosen_dir{i};
-    filename = fullfile('stimuli',SubjName,chosen_dir{i}); 
-    [SoundData{i},~]=audioread(filename);
-    SoundData{i} = SoundData{i}';
-    
-end
-endPsych = GetSecs - startPsych; % not sure if we need this
-
-
-
-
-
-%[soundData, freq] = loadAudioFiles(SubjName);
 %PsychPortAudio('FillBuffer',phandle,soundData_static);
 %fprintf('\nstatic wav file loaded. \n')
 
 %% PTB Setup
-% screenNumber = max(Screen('Screens'));
-% %screenNumber = 0;
-% Screen('Preference', 'SkipSyncTests', 2);
-% [w, winRect, xMid, yMid] = startPTB(screenNumber, 1, [128 128 128]);
+screenNumber = max(Screen('Screens'));
+%screenNumber = 0;
+Screen('Preference', 'SkipSyncTests', 2);
+[w, winRect, xMid, yMid] = startPTB(screenNumber, 1, [128 128 128]);
 HideCursor;
 
-%% TRIGGER - OR NOT TRIGGER - HOW TRIGGER WORKS
-if strcmp(device,'trial')
+%% Color indeces, and Screen parameters and inter-flip interval.  
+% Color indices
+white = WhiteIndex(screenNumber);                        
+black = BlackIndex(screenNumber);
+grey = ceil((white+black)/2);
+
+% Flip interval and screen size
+ifi = Screen('GetFlipInterval', w);                                            % Get the flip interval
+[tw, th] = Screen('WindowSize', w);
+
+%nframes  = floor(blockDur/ifi);
+% while mod(nframes,2)~=0                                                % make sure the nframes are even number
+%     nframes = nframes-1;                                                       % to be able to re-assign dots in the static condition (to perform divison calculation)
+% end
+
+%% Welcome screen
+Screen('TextFont',w, 'Courier New');
+Screen('TextSize',w, 20);
+Screen('TextStyle', w, 1);
+DrawFormattedText(w,'Press for FASTER sound \n\n\n(static or motion)',...
+            'center', 'center', black);
+Screen('Flip', w);
+[~, ~, ~]=KbCheck;
+KbWait;
+Screen('Flip', w);
+
+WaitSecs(0.25);
+
+% DrawFormattedText(w,'The experiment is about to begin','center', 'center', black);
+% Screen('Flip', w);
+% [KeyIsDown, pend, KeyCode]=KbCheck;
+% 
+% KbWait;
+% Screen('Flip', w);
+
+%% FUNCTION
+if strcmp(device,'PC')
     DrawFormattedText(w,'Waiting For Trigger',...
         'center', 'center', black);
     Screen('Flip', w);
@@ -116,30 +116,35 @@ if strcmp(device,'trial')
         [KeyIsDown, ~, ~]=KbCheck;
     end
     
-% open Serial Port "SerPor" - COM1 (BAUD RATE: 11520) %
-% TRIGGER EEG?
-elseif strcmp(device,'eeg')
+% open Serial Port "SerPor" - COM1 (BAUD RATE: 11520)
+elseif strcmp(device,'Scanner')
     DrawFormattedText(w,'Waiting For Trigger','center', 'center', black);
     Screen('Flip', w);
- %   SerPor = MT_portAndTrigger;
+    SerPor = MT_portAndTrigger;
     Screen('Flip', w);
 end
 
 %% Experiment Start (Main Loop)
 experimentStartTime = GetSecs;
 
-% %% Pixels per degree
-% [mirrorPixelPerDegree] = mirror2Pixels (winRect,v_dist,mirror_width) ;         % Calculate pixel per degree on the mirror surface
-% 
-% %% fixation coordiates
-% adjusted_yAxis = th; 
-% fix_cord = [[tw/2 adjusted_yAxis/2]-fix_r*mirrorPixelPerDegree [tw/2 adjusted_yAxis/2]+fix_r*mirrorPixelPerDegree];
+%% To correct for the y-axis problem inside the scanner
+if strcmp(device,'Scanner')
+    adjusted_yAxis = 2/3*th;        %  where the lower 1/3 of the screen is not appearing because of coil
+elseif strcmp(device,'PC')
+    adjusted_yAxis = th;            %  y-axis is the same, no changes
+end
+
+%% Pixels per degree
+[mirrorPixelPerDegree] = mirror2Pixels (winRect,v_dist,mirror_width) ;         % Calculate pixel per degree on the mirror surface
+
+%% fixation coordiates
+fix_cord = [[tw/2 adjusted_yAxis/2]-fix_r*mirrorPixelPerDegree [tw/2 adjusted_yAxis/2]+fix_r*mirrorPixelPerDegree];
 
 %% Experiment start
-% % The experment will wait (initial_wait)  Secs before running the stimuli
-% Screen('FillOval', w, uint8(white), fix_cord);	% draw fixation dot (flip erases it)
-% blank_onset=Screen('Flip', w);
-% WaitSecs('UntilTime', blank_onset + initial_wait);
+% The experment will wait (initial_wait)  Secs before running the stimuli
+Screen('FillOval', w, uint8(white), fix_cord);	% draw fixation dot (flip erases it)
+blank_onset=Screen('Flip', w);
+WaitSecs('UntilTime', blank_onset + initial_wait);
 
 targetTime   = [];
 responseKey  = [];
@@ -204,10 +209,8 @@ for blocks = 1:numBlocks
          
          while GetSecs() <= eventOnsets(blocks,iEvent)+ experimentStartTime + (length(Sound)/freq)
              
-             if strcmp(device,'eeg')
-                 % ADD THE MOUSEPAD HERE !!!!!
-                 
-               %  [sbutton,secs] = TakeSerialButton(SerPor);
+             if strcmp(device,'Scanner')
+                 [sbutton,secs] = TakeSerialButton(SerPor);
                  %[sbutton,secs] = MT_TakeSerialButtonPerFrame(SerPor);
                  %responseKey(end+1)= sbutton;
                  if sbutton~= 0
@@ -217,8 +220,6 @@ for blocks = 1:numBlocks
                      % while you are pressing, wait till it is
                             % released
                             while  sbutton ~= 0
-                                % DELETE THIS PART - INSERT MOUSE OR
-                                % KEYBOARD
                                 [sbutton,secs]= TakeSerialButton(Cfg.SerPor);
                             end
                      %%%%%%%%%%%%%%%%%%%%%
@@ -228,7 +229,7 @@ for blocks = 1:numBlocks
                  
                  
                  
-             elseif  strcmp(device,'trial')
+             elseif  strcmp(device,'PC')
                  
                  [keyIsDown, secs, ~ ] = KbCheck();
                  
@@ -314,17 +315,17 @@ save(['logFile_',SubjName,'.mat'], 'names','onsets','durations','ends','targets'
 
 
 %% FUNCTION
-% % close Serial Port ----  VERY IMPORTANT NOT FORGET
-% if strcmp(device,'Scanner')
-%     CloseSerialPort(SerPor);
-% end
+% close Serial Port ----  VERY IMPORTANT NOT FORGET
+if strcmp(device,'Scanner')
+    CloseSerialPort(SerPor);
+end
 
 % catch
     clear Screen;
     fprintf('Code was catched!')
-%     %% Close serial port of the scanner IF CRASH OF THE CODE
-%     if strcmp(Cfg.device,'Scanner')
-%         CloseSerialPort(Cfg.SerPor);
-%     end
+    %% Close serial port of the scanner IF CRASH OF THE CODE
+    if strcmp(Cfg.device,'Scanner')
+        CloseSerialPort(Cfg.SerPor);
+    end
     
 % end
