@@ -1,0 +1,2 @@
+ BlockNumber     Modality    Direction        Onset          End     Duration    SiriOnset SiriDuration  SiriCorrect     SiriSubj 
+           1       visual            0     5.000299    18.323109    13.322810    18.841725     4.999754            1            1 

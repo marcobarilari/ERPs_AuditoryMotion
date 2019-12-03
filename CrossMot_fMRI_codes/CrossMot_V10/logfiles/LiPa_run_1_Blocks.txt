@@ -1,0 +1,2 @@
+ BlockNumber     Modality    Direction        Onset          End     Duration    SiriOnset SiriDuration  SiriCorrect     SiriSubj 
+           1     auditory          180     5.002721    18.248215    13.245494    18.771371     4.999643            1            1 
