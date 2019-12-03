@@ -44,8 +44,8 @@ ibi = 1.5;                                                                      
 
 
 
- 
-nrBlocks = 120;                                                                 % Number of trials , where 1 block = 1 block of all conditions (static and motion)
+numEvents = 120; 
+nrBlocks = 1;                                                                 % Number of trials , where 1 block = 1 block of all conditions (static and motion)
 percTarget = 10;                                                                % Percentage of trials as target
 %numEventsPerBlock = 1;
 %range_targets = [0 2];                                                         % range of number of targets in each block (from 2 to 5 targets in each block)
@@ -72,17 +72,17 @@ InitializePsychSound(1);
 %OPEN AUDIO PORTS
 startPsych = GetSecs();
 phandle = PsychPortAudio('Open',[],[],1,freq,2);
-HideCursor;
+%HideCursor;
 
 soundfiles = {'mot_LRRL', 'mot_RLLR', 'Static','mot_LRRL_T', 'mot_RLLR_T', 'Static_T'};
-rndstim_order = getTrialSeq(nrBlocks, percTarget); %repmat(1:6,1,4); %SHUFFLE 2 MOTION + 1 static + 10% of targers
+[rndstim_names, rndstim_order]= getTrialSeq(numEvents, percTarget); %repmat(1:6,1,4); %SHUFFLE 2 MOTION + 1 static + 10% of targers
 Numsounds = length(rndstim_order);
-%fileName=fullfile('stimuli','Static','Static.wav');
+
     
 %load the buffer
 for i = 1:Numsounds
     
-    chosen_dir{i} = [SubjName,'_',soundfiles{rndstim_order(i)},'.wav'];
+    chosen_dir{i} = [SubjName,'_',rndstim_names{i},'.wav'];
     %chosen_dirName = chosen_dir{i};
     filename = fullfile('stimuli',SubjName,chosen_dir{i}); 
     [SoundData{i},~]=audioread(filename);
@@ -104,40 +104,30 @@ if strcmp(device,'trial')
         [KeyIsDown, ~, ~]=KbCheck;
     end
     
-% open Serial Port "SerPor" - COM1 (BAUD RATE: 11520) %
 % TRIGGER EEG?
 elseif strcmp(device,'eeg')
     fprintf('Waiting For Trigger...');
-    Screen('Flip', w);
+
+    
+    
+    
+    %INSERT TIRGGER HERE ???
  %   SerPor = MT_portAndTrigger;
-    Screen('Flip', w);
+
 end
 
 %% Experiment Start (Main Loop)
 experimentStartTime = GetSecs;
 
-% %% Pixels per degree
-% [mirrorPixelPerDegree] = mirror2Pixels (winRect,v_dist,mirror_width) ;         % Calculate pixel per degree on the mirror surface
-% 
-% %% fixation coordiates
-% adjusted_yAxis = th; 
-% fix_cord = [[tw/2 adjusted_yAxis/2]-fix_r*mirrorPixelPerDegree [tw/2 adjusted_yAxis/2]+fix_r*mirrorPixelPerDegree];
-
-%% Experiment start
-% % The experment will wait (initial_wait)  Secs before running the stimuli
-% Screen('FillOval', w, uint8(white), fix_cord);	% draw fixation dot (flip erases it)
-% blank_onset=Screen('Flip', w);
-% WaitSecs('UntilTime', blank_onset + initial_wait);
-
 targetTime   = [];
 responseKey  = [];
 responseTime = [];
 
-eventOnsets=zeros(numBlocks,numEventsPerBlock);
-eventEnds=zeros(numBlocks,numEventsPerBlock);
-eventDurations=zeros(numBlocks,numEventsPerBlock);
+eventOnsets=zeros(numBlocks,numEvents);
+eventEnds=zeros(numBlocks,numEvents);
+eventDurations=zeros(numBlocks,numEvents);
 
-responsesPerBlock=zeros(numBlocks,1);
+responsesPerBlock=zeros(numBlocks,1); % ??
 
 playTime = zeros(numBlocks,1);
 
