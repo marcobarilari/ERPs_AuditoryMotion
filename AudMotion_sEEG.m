@@ -178,9 +178,7 @@ for iEvent = 1:15 %numEvents
     timeLogger(iEvent).length  = timeLogger(iEvent).endTime - timeLogger(iEvent).startTime;  %Get the block duration
     timeLogger(iEvent).isTarget = isTarget(Event_order(iEvent));
     timeLogger(iEvent).response = responses(iEvent);
-    % add target or not
-    % add response pressed or not
-    % what is the response button?
+    % add response pressed or not // what is the response button?
     % consider adding the ending of each sound, atm it's the event (sound +
     % response gap)
     % consider adding WaitSec for ending? 
