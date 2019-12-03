@@ -58,20 +58,61 @@ fix_r       = 0.15;                                                            %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                                               % 1 Cycle = one inward and outward motion together
 %% Experimental Design
 % function "experimental_design" while assign the blocks, conditions, and 
-% the number of targets that will be used in the motion localizer
+% the number of targets that will be used in the AUDITORY motion EXP
 %[names,targets,condition] = experimental_design(nrBlocks,range_targets);  
 [names,targets,condition,directions,isTarget] = experimental_design(nrBlocks,numEventsPerBlock,range_targets) ;
-
+% WHAT WE NEED IS SHUFFLE THE LRRL RLLR AND STATIC AAAND ADD 10% TARGETS
 numBlocks = length(names);                                                     % Create a variable with the number of blocks in the whole experiment
 
 
 %% InitializePsychAudio;
 InitializePsychSound(1);
 
-[soundData, freq] = loadAudioFiles(SubjName);
+
+soundfiles = {'LRRL', 'RLLR', 'Static','LRRL_T', 'RLLR_T', 'Static_T'};
+rndstim_order = repmat(1:6,1,4); %MARCO_FUNCTION; %SHUFFLE 2 MOTION + 1 static + 10% of targers
+Numsounds = length(rndstim_order);
+    
+    
+%load the buffer
+for i = 1:Numsounds
+    
+    chosen_dir{i} = directNames{rndstim_order(i)};
+    %chosen_dirName = chosen_dir{i};
+    filename = sprintf(soundname,subject,sep,chosen_dir{i}); % %s%s15bursts_static_%s
+    [SoundData{i},~]=audioread(filename);
+    SoundData{i} = SoundData{i}';
+    
+end
+endPsych = GetSecs - startPsych;
+
+
+
+
+
+%[soundData, freq] = loadAudioFiles(SubjName);
+
+%OPEN AUDIO PORTS
+startPsych = GetSecs();
 phandle = PsychPortAudio('Open',[],[],1,freq,2);
 %PsychPortAudio('FillBuffer',phandle,soundData_static);
 %fprintf('\nstatic wav file loaded. \n')
+
+%% LOAD the BUFFER
+%open audio driver
+
+
+%load the buffer
+for i = 1:Numsounds
+    
+    chosen_dir{i} = directNames{rndstim_order(i)};
+    %chosen_dirName = chosen_dir{i};
+    filename = sprintf(soundname,subject,sep,chosen_dir{i}); % %s%s15bursts_static_%s
+    [SoundData{i},~]=audioread(filename);
+    SoundData{i} = SoundData{i}';
+    
+end
+endPsych = GetSecs - startPsych;
 
 %% PTB Setup
 screenNumber = max(Screen('Screens'));
@@ -80,42 +121,9 @@ Screen('Preference', 'SkipSyncTests', 2);
 [w, winRect, xMid, yMid] = startPTB(screenNumber, 1, [128 128 128]);
 HideCursor;
 
-%% Color indeces, and Screen parameters and inter-flip interval.  
-% Color indices
-white = WhiteIndex(screenNumber);                        
-black = BlackIndex(screenNumber);
-grey = ceil((white+black)/2);
 
-% Flip interval and screen size
-ifi = Screen('GetFlipInterval', w);                                            % Get the flip interval
-[tw, th] = Screen('WindowSize', w);
 
-%nframes  = floor(blockDur/ifi);
-% while mod(nframes,2)~=0                                                % make sure the nframes are even number
-%     nframes = nframes-1;                                                       % to be able to re-assign dots in the static condition (to perform divison calculation)
-% end
-
-%% Welcome screen
-Screen('TextFont',w, 'Courier New');
-Screen('TextSize',w, 20);
-Screen('TextStyle', w, 1);
-DrawFormattedText(w,'Press for FASTER sound \n\n\n(static or motion)',...
-            'center', 'center', black);
-Screen('Flip', w);
-[~, ~, ~]=KbCheck;
-KbWait;
-Screen('Flip', w);
-
-WaitSecs(0.25);
-
-% DrawFormattedText(w,'The experiment is about to begin','center', 'center', black);
-% Screen('Flip', w);
-% [KeyIsDown, pend, KeyCode]=KbCheck;
-% 
-% KbWait;
-% Screen('Flip', w);
-
-%% FUNCTION
+%% TRIGGER - OR NOT TRIGGER
 if strcmp(device,'trial')
     DrawFormattedText(w,'Waiting For Trigger',...
         'center', 'center', black);
@@ -140,18 +148,18 @@ end
 %% Experiment Start (Main Loop)
 experimentStartTime = GetSecs;
 
-%% Pixels per degree
-[mirrorPixelPerDegree] = mirror2Pixels (winRect,v_dist,mirror_width) ;         % Calculate pixel per degree on the mirror surface
-
-%% fixation coordiates
-adjusted_yAxis = th; 
-fix_cord = [[tw/2 adjusted_yAxis/2]-fix_r*mirrorPixelPerDegree [tw/2 adjusted_yAxis/2]+fix_r*mirrorPixelPerDegree];
+% %% Pixels per degree
+% [mirrorPixelPerDegree] = mirror2Pixels (winRect,v_dist,mirror_width) ;         % Calculate pixel per degree on the mirror surface
+% 
+% %% fixation coordiates
+% adjusted_yAxis = th; 
+% fix_cord = [[tw/2 adjusted_yAxis/2]-fix_r*mirrorPixelPerDegree [tw/2 adjusted_yAxis/2]+fix_r*mirrorPixelPerDegree];
 
 %% Experiment start
-% The experment will wait (initial_wait)  Secs before running the stimuli
-Screen('FillOval', w, uint8(white), fix_cord);	% draw fixation dot (flip erases it)
-blank_onset=Screen('Flip', w);
-WaitSecs('UntilTime', blank_onset + initial_wait);
+% % The experment will wait (initial_wait)  Secs before running the stimuli
+% Screen('FillOval', w, uint8(white), fix_cord);	% draw fixation dot (flip erases it)
+% blank_onset=Screen('Flip', w);
+% WaitSecs('UntilTime', blank_onset + initial_wait);
 
 targetTime   = [];
 responseKey  = [];
