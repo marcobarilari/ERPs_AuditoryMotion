@@ -96,32 +96,14 @@ endPsych = GetSecs - startPsych; % not sure if we need this
 %PsychPortAudio('FillBuffer',phandle,soundData_static);
 %fprintf('\nstatic wav file loaded. \n')
 
-%% LOAD the BUFFER
-%open audio driver
-
-
-%load the buffer
-for i = 1:Numsounds
-    
-    chosen_dir{i} = directNames{rndstim_order(i)};
-    %chosen_dirName = chosen_dir{i};
-    filename = sprintf(soundname,subject,sep,chosen_dir{i}); % %s%s15bursts_static_%s
-    [SoundData{i},~]=audioread(filename);
-    SoundData{i} = SoundData{i}';
-    
-end
-endPsych = GetSecs - startPsych;
-
 %% PTB Setup
-screenNumber = max(Screen('Screens'));
-%screenNumber = 0;
-Screen('Preference', 'SkipSyncTests', 2);
-[w, winRect, xMid, yMid] = startPTB(screenNumber, 1, [128 128 128]);
+% screenNumber = max(Screen('Screens'));
+% %screenNumber = 0;
+% Screen('Preference', 'SkipSyncTests', 2);
+% [w, winRect, xMid, yMid] = startPTB(screenNumber, 1, [128 128 128]);
 HideCursor;
 
-
-
-%% TRIGGER - OR NOT TRIGGER
+%% TRIGGER - OR NOT TRIGGER - HOW TRIGGER WORKS
 if strcmp(device,'trial')
     DrawFormattedText(w,'Waiting For Trigger',...
         'center', 'center', black);
