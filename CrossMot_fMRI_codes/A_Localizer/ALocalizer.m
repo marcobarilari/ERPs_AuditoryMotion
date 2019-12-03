@@ -25,20 +25,35 @@ fprintf('Auditory ERPs \n\n')
 
 %% Experiment Parametes
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-initial_wait = 5;                                                              % seconds to have a blank screen at the beginning, the scans will be discarded until                                                                              % the magnetic field is homogenous                                                                         
-finalWait = 5;
+initial_wait = 1;                                                              % seconds to have a blank screen at the beginning, the scans will be discarded until                                                                              % the magnetic field is homogenous                                                                         
+finalWait = 1;
+
 %blockDur = 16;                                                                 % Block duration [should be a multiple of osc (below)]                                                                               
-ISI = 0.1;             % Interstimulus Interval between events in the block.
-ibi = 6;                                                                       % Inter-block duration in seconds (time between blocks)
-nrBlocks = 14;                                                                 % Number of trials , where 1 block = 1 block of all conditions (static and motion)
-numEventsPerBlock = 12;
+ISI = 0.0;             % Interstimulus Interval between events in the block.
+ibi = 1.5;                                                                       % Inter-block duration in seconds (time between blocks)
+% MAKE gaussian distribution of IBI later on.
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+nrBlocks = 24;                                                                 % Number of trials , where 1 block = 1 block of all conditions (static and motion)
+numEventsPerBlock = 1;
 range_targets = [0 2];                                                         % range of number of targets in each block (from 2 to 5 targets in each block)
 
 mirror_width= 11.5;                                                            % Width (x-axis) of the mirror (in cm)
 v_dist      = 14;                                                              % viewing distance from the mirror (cm) "in this script we use mirror"
 fix_r       = 0.15;                                                            % radius of fixation point (deg)
 
-%Audiofile_duration = 16 ;                                                      % Length of the Audio file (in seconds)
+%Audiofile_duration = 1 ;                                                      % Length of the Audio file (in seconds)
 %Stop_audiofile = blockDur ;                                                    % Let the audio file play for x Seconds
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                                               % 1 Cycle = one inward and outward motion together
 %% Experimental Design

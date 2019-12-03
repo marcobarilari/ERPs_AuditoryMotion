@@ -1,4 +1,7 @@
 %function mirror_runMTLocalizer
+
+% Original Script Written by Sam Weiller to localize MT+/V5
+% Adapted by M.Rezk to localize MT/MST (Huk,2002)
 % simplify the ALocaliser fmri experiment for ERPs
 
 clear all;
@@ -10,8 +13,7 @@ device = 'trial';
 
 fprintf('Connected Device is %s \n\n',device);
 
-% Original Script Written by Sam Weiller to localize MT+/V5
-% Adapted by M.Rezk to localize MT/MST (Huk,2002)
+
 %% Start me up
 % Get the subject Name
 SubjName = input('Subject Name: ','s');
@@ -26,7 +28,7 @@ fprintf('Auditory ERPs \n\n')
 initial_wait = 5;                                                              % seconds to have a blank screen at the beginning, the scans will be discarded until                                                                              % the magnetic field is homogenous                                                                         
 finalWait = 5;
 %blockDur = 16;                                                                 % Block duration [should be a multiple of osc (below)]                                                                               
-ISI = 0.1;             % Interstimulus Interval between events in the block.
+ISI = 0.;             % Interstimulus Interval between events in the block.
 ibi = 6;                                                                       % Inter-block duration in seconds (time between blocks)
 nrBlocks = 14;                                                                 % Number of trials , where 1 block = 1 block of all conditions (static and motion)
 numEventsPerBlock = 12;
@@ -123,14 +125,11 @@ end
 %% Experiment Start (Main Loop)
 experimentStartTime = GetSecs;
 
-%% To correct for the y-axis problem inside the scanner
-adjusted_yAxis = th;            %  y-axis is the same, no changes
-
-
 %% Pixels per degree
 [mirrorPixelPerDegree] = mirror2Pixels (winRect,v_dist,mirror_width) ;         % Calculate pixel per degree on the mirror surface
 
 %% fixation coordiates
+adjusted_yAxis = th; 
 fix_cord = [[tw/2 adjusted_yAxis/2]-fix_r*mirrorPixelPerDegree [tw/2 adjusted_yAxis/2]+fix_r*mirrorPixelPerDegree];
 
 %% Experiment start
@@ -202,8 +201,10 @@ for blocks = 1:numBlocks
          
          while GetSecs() <= eventOnsets(blocks,iEvent)+ experimentStartTime + (length(Sound)/freq)
              
-             if strcmp(device,'Scanner')
-                 [sbutton,secs] = TakeSerialButton(SerPor);
+             if strcmp(device,'eeg')
+                 % ADD THE MOUSEPAD HERE !!!!!
+                 
+               %  [sbutton,secs] = TakeSerialButton(SerPor);
                  %[sbutton,secs] = MT_TakeSerialButtonPerFrame(SerPor);
                  %responseKey(end+1)= sbutton;
                  if sbutton~= 0
@@ -213,6 +214,8 @@ for blocks = 1:numBlocks
                      % while you are pressing, wait till it is
                             % released
                             while  sbutton ~= 0
+                                % DELETE THIS PART - INSERT MOUSE OR
+                                % KEYBOARD
                                 [sbutton,secs]= TakeSerialButton(Cfg.SerPor);
                             end
                      %%%%%%%%%%%%%%%%%%%%%
@@ -222,7 +225,7 @@ for blocks = 1:numBlocks
                  
                  
                  
-             elseif  strcmp(device,'PC')
+             elseif  strcmp(device,'trial')
                  
                  [keyIsDown, secs, ~ ] = KbCheck();
                  
@@ -308,17 +311,17 @@ save(['logFile_',SubjName,'.mat'], 'names','onsets','durations','ends','targets'
 
 
 %% FUNCTION
-% close Serial Port ----  VERY IMPORTANT NOT FORGET
-if strcmp(device,'Scanner')
-    CloseSerialPort(SerPor);
-end
+% % close Serial Port ----  VERY IMPORTANT NOT FORGET
+% if strcmp(device,'Scanner')
+%     CloseSerialPort(SerPor);
+% end
 
 % catch
     clear Screen;
     fprintf('Code was catched!')
-    %% Close serial port of the scanner IF CRASH OF THE CODE
-    if strcmp(Cfg.device,'Scanner')
-        CloseSerialPort(Cfg.SerPor);
-    end
+%     %% Close serial port of the scanner IF CRASH OF THE CODE
+%     if strcmp(Cfg.device,'Scanner')
+%         CloseSerialPort(Cfg.SerPor);
+%     end
     
 % end

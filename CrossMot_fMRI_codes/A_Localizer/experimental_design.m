@@ -69,6 +69,6 @@ directions=cell(size(isTarget));
 directions(staticIndex,:)={'S'};
 
 for iMot=1:length(motionIndex)    
-    directions(motionIndex(iMot),:)= Shuffle(repmat({'U','D','R','L'},1,3));
+    directions(motionIndex(iMot),:)= Shuffle(repmat({'RLLR','LRRL'},1,6)); %it was 3 before, CONSIDER CHANGING IT
 end
     
