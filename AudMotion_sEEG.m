@@ -39,8 +39,8 @@ ISI = 1.5;                                                                      
 
 
 
-stim_duration = 1;                                                              % Duration of 1 sound
-event_duration = stim_duration + ISI;                                           % 1 trial duration
+%stim_duration = 1;                                                             % Duration of 1 sound % NEED TO UPDATE IN THE LOOP
+%event_duration = stim_duration + ISI;                                          % 1 trial duration % NEED TO UPDATE IN THE LOOP
 numEvents = 120;                                                                % Number of trials
 percTarget = 10;                                                                % Percentage of trials as target
 freq = 44100;
@@ -142,7 +142,7 @@ for iEvent = 1:5 %numEvents
     eventOnsets(iEvent)=GetSecs-experimentStartTime;                            % Get the onset time
     
     PsychPortAudio('FillBuffer',phandle,Sound);                                % %Play the sound
-    playTime(1,iEvent) = PsychPortAudio('Start', phandle, [],[],1,startEvent+stim_duration); %
+    playTime(1,iEvent) = PsychPortAudio('Start', phandle, [],[],1,startEvent+(length(Sound)/freq)); %
     % playTime(iEvent,1) = PsychPortAudio('Start',phandle);
     % startTime = GetSecs();
     %%%%%%
@@ -173,9 +173,11 @@ for iEvent = 1:5 %numEvents
 %     end                                                                          % for the exact length of stimulus + response gap = eventDuration
 %     
     
-    responses(iEvent,1) = responseCount ;
+    responses(iEvent) = responseCount ;
     timeLogger(iEvent).endTime = GetSecs - experimentStartTime;                 % Get the time for the block end
     timeLogger(iEvent).length  = timeLogger(iEvent).endTime - timeLogger(iEvent).startTime;  %Get the block duration
+    timeLogger(iEvent).isTarget = isTarget(Event_order(iEvent));
+    timeLogger(iEvent).response = responses(iEvent);
     % add target or not
     % add response pressed or not
     % what is the response button?
