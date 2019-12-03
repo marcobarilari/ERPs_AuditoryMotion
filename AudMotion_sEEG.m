@@ -1,4 +1,4 @@
-%function mirror_runMTLocalizer
+function AudMotion_sEEG
 
 % Original Script Written by Sam Weiller to localize MT+/V5
 % Adapted by M.Rezk to localize MT/MST (Huk,2002)
@@ -25,10 +25,7 @@ fprintf('Auditory ERPs \n\n')
 
 %% Experiment Parametes
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-initial_wait = 1;                                                              % seconds to have a blank screen at the beginning, the scans will be discarded until                                                                              % the magnetic field is homogenous                                                                         
 finalWait = 1;
-
-%blockDur = 16;                                                                 % Block duration [should be a multiple of osc (below)]                                                                               
 ISI = 0.0;             % Interstimulus Interval between events in the block.
 ibi = 1.5;                                                                       % Inter-block duration in seconds (time between blocks)
 % MAKE gaussian distribution of IBI later on.
@@ -45,52 +42,30 @@ ibi = 1.5;                                                                      
 
 
 numEvents = 120; 
-nrBlocks = 1;                                                                 % Number of trials , where 1 block = 1 block of all conditions (static and motion)
 percTarget = 10;                                                                % Percentage of trials as target
 %numEventsPerBlock = 1;
 %range_targets = [0 2];                                                         % range of number of targets in each block (from 2 to 5 targets in each block)
 freq = 44100;
 
-mirror_width= 11.5;                                                            % Width (x-axis) of the mirror (in cm)
-v_dist      = 14;                                                              % viewing distance from the mirror (cm) "in this script we use mirror"
-fix_r       = 0.15;                                                            % radius of fixation point (deg)
-
-%Audiofile_duration = 1 ;                                                      % Length of the Audio file (in seconds)
-%Stop_audiofile = blockDur ;                                                    % Let the audio file play for x Seconds
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                                               % 1 Cycle = one inward and outward motion together
 %% Experimental Design
-% function "experimental_design" while assign the blocks, conditions, and 
-% the number of targets that will be used in the AUDITORY motion EXP
-%[names,targets,condition] = experimental_design(nrBlocks,range_targets);  
-%[names,targets,condition,directions,isTarget] = experimental_design(nrBlocks,numEventsPerBlock,range_targets) ;
-% WHAT WE NEED IS SHUFFLE THE LRRL RLLR AND STATIC AAAND ADD 10% TARGETS
-%numBlocks = length(names);                                                     % Create a variable with the number of blocks in the whole experiment
-
+soundfiles = {'Static','mot_LRRL', 'mot_RLLR', 'Static_T','mot_LRRL_T', 'mot_RLLR_T'}; % order IS important
+rndstim_order= getTrialSeq(numEvents, percTarget); %repmat(1:6,1,4); %SHUFFLE 2 MOTION + 1 static + 10% of targers
+%[rndstim_names, rndstim_order]= getTrialSeq(numEvents, percTarget); 
+Numsounds = length(rndstim_order);
+stim_length = length(soundfiles);
 
 %% InitializePsychAudio;
 InitializePsychSound(1);
 %OPEN AUDIO PORTS
 startPsych = GetSecs();
 phandle = PsychPortAudio('Open',[],[],1,freq,2);
-%HideCursor;
 
-soundfiles = {'Static','mot_LRRL', 'mot_RLLR', 'Static_T','mot_LRRL_T', 'mot_RLLR_T'}; % order IS important
-% static 1
-% mot_LRRL 2
-% mot_RLLR 3
-% Static_T 4
-% mot_LRRL_T 5
-% mot_RLLR_T 6
-rndstim_order= getTrialSeq(numEvents, percTarget); %repmat(1:6,1,4); %SHUFFLE 2 MOTION + 1 static + 10% of targers
-%[rndstim_names, rndstim_order]= getTrialSeq(numEvents, percTarget); 
-Numsounds = length(rndstim_order);
-stim_length = length(soundfiles);
-    
+
 %load the buffer
 for i = 1:stim_length
     
     chosen_dir{i} = [soundfiles{i},'.wav'];
-    %chosen_dirName = chosen_dir{i};
     filename = fullfile('stimuli',SubjName,chosen_dir{i}); 
     [SoundData{i},~]=audioread(filename);
     SoundData{i} = SoundData{i}';
@@ -102,7 +77,7 @@ endPsych = GetSecs - startPsych; % not sure if we need this
 
 
 %% TRIGGER - OR NOT TRIGGER - HOW TRIGGER WORKS
-if strcmp(device,'trial')
+if strcmp(device,'test')
     
     % press key
     KbWait();
@@ -111,18 +86,30 @@ if strcmp(device,'trial')
         [KeyIsDown, ~, ~]=KbCheck;
     end
     
+    
 % TRIGGER EEG?
 elseif strcmp(device,'eeg')
     fprintf('Waiting For Trigger...');
-
+    begin_trig = GetSecs();
+    
+    
+    
+    
     
     
     
     %INSERT TIRGGER HERE ???
- %   SerPor = MT_portAndTrigger;
+
 
 end
 
+Trigger_onset = GetSecs();
+fprintf('starting experiment \n');
+tot_trig = Trigger_onset - begin_trig;
+
+
+ExpStart = GetSecs();
+hold_expStart = ExpStart;
 %% Experiment Start (Main Loop)
 experimentStartTime = GetSecs;
 
@@ -130,113 +117,55 @@ targetTime   = [];
 responseKey  = [];
 responseTime = [];
 
-eventOnsets=zeros(numBlocks,numEvents);
-eventEnds=zeros(numBlocks,numEvents);
-eventDurations=zeros(numBlocks,numEvents);
-
-responsesPerBlock=zeros(numBlocks,1); % ??
+eventOnsets=zeros(1,numEvents);
+eventEnds=zeros(1,numEvents);
+eventDurations=zeros(1,numEvents);
+responses=zeros(1,numEvents);
 
 playTime = zeros(numBlocks,1);
 
-for blocks = 1:numBlocks
+for blocks = 1
     
-    timeLogger.block(blocks).startTime = GetSecs - experimentStartTime;        % Get the start time of the block
-    timeLogger.block(blocks).condition = condition(blocks);                    % Get the condition of the block (motion or static)
-    timeLogger.block(blocks).names = names(blocks);                            % Get the name of the block 
+
     
-    responseCount=0;
-    
-    for iEvent = 1: numEventsPerBlock
+    for iEvent = 1: numEvents
         
-        Sound=[];
+        timeLogger.startTime = GetSecs - experimentStartTime;        % Get the start time of the event
+        timeLogger.condition = condition(iEvent);                    % Get the condition of the event (motion or static)
+        timeLogger.names = names(iEvent);                            % Get the name of the event
         
-        if isTarget(blocks,iEvent)==0
-            
-            if strcmp(directions(blocks,iEvent),'S')
-                Sound= soundData.S;
-            elseif strcmp(directions(blocks,iEvent),'U')
-                Sound= soundData.U;
-            elseif strcmp(directions(blocks,iEvent),'D')
-                Sound= soundData.D;
-            elseif strcmp(directions(blocks,iEvent),'R')
-                Sound= soundData.R;
-            elseif strcmp(directions(blocks,iEvent),'L')
-                Sound= soundData.L;
-            end
-        
-        elseif isTarget(blocks,iEvent)==1
-            
-            if strcmp(directions(blocks,iEvent),'S')
-                Sound= soundData.S_T;
-            elseif strcmp(directions(blocks,iEvent),'U')
-                Sound= soundData.U_T;
-            elseif strcmp(directions(blocks,iEvent),'D')
-                Sound= soundData.D_T;
-            elseif strcmp(directions(blocks,iEvent),'R')
-                Sound= soundData.R_T;
-            elseif strcmp(directions(blocks,iEvent),'L')
-                Sound= soundData.L_T;
-            end
-            
-        end
-        
-        eventOnsets(blocks,iEvent)=GetSecs-experimentStartTime;
+        responseCount=0;
+
+        eventOnsets(iEvent)=GetSecs-experimentStartTime;
         
         PsychPortAudio('FillBuffer',phandle,Sound);
-        playTime(blocks,1) = PsychPortAudio('Start',phandle);
+        playTime(iEvent,1) = PsychPortAudio('Start',phandle);
          
-         %length(playedAudio)/freq
          
-         while GetSecs() <= eventOnsets(blocks,iEvent)+ experimentStartTime + (length(Sound)/freq)
+         % collect button press from the keyboard
+         while GetSecs() <= eventOnsets(iEvent)+ experimentStartTime + (length(Sound)/freq)
+
+             [keyIsDown, secs, ~ ] = KbCheck();
              
-             if strcmp(device,'eeg')
-                 % ADD THE MOUSEPAD HERE !!!!!
-                 
-               %  [sbutton,secs] = TakeSerialButton(SerPor);
-                 %[sbutton,secs] = MT_TakeSerialButtonPerFrame(SerPor);
-                 %responseKey(end+1)= sbutton;
-                 if sbutton~= 0
-                     responseTime(end+1)= secs - experimentStartTime;
-                     
-                     %%%%%%%%%%%%%%%%%%%%%
-                     % while you are pressing, wait till it is
-                            % released
-                            while  sbutton ~= 0
-                                % DELETE THIS PART - INSERT MOUSE OR
-                                % KEYBOARD
-                                [sbutton,secs]= TakeSerialButton(Cfg.SerPor);
-                            end
-                     %%%%%%%%%%%%%%%%%%%%%
-                            
-                     responseCount = responseCount + 1;
+             if keyIsDown
+                 responseTime(end+1)= secs - experimentStartTime;
+                 while keyIsDown ==1
+                     [keyIsDown , ~] = KbCheck();
                  end
                  
-                 
-                 
-             elseif  strcmp(device,'trial')
-                 
-                 [keyIsDown, secs, ~ ] = KbCheck();
-                 
-                 if keyIsDown
-                     responseTime(end+1)= secs - experimentStartTime;
-                     while keyIsDown ==1
-                         [keyIsDown , ~] = KbCheck();
-                     end
-                     
-                     responseCount = responseCount + 1;
-                 end
+                 responseCount = responseCount + 1;
              end
              
          end
          
-         eventEnds(blocks,iEvent)=GetSecs-experimentStartTime;
-         eventDurations(blocks,iEvent)=eventEnds(blocks,iEvent)-eventOnsets(blocks,iEvent);
+         eventEnds(iEvent)=GetSecs-experimentStartTime;
+         eventDurations(iEvent)=eventEnds(iEvent)-eventOnsets(iEvent);
          
          WaitSecs(ISI);
          
     end
     
-    responsesPerBlock (blocks,1) = responseCount ;
+    responses(blocks,1) = responseCount ;
     
     %% Get Block end and duration
     timeLogger.block(blocks).endTime = GetSecs - experimentStartTime;            % Get the time for the block end
@@ -256,16 +185,16 @@ WaitSecs('UntilTime', blank_onset + finalWait);
 
 
 %% Save the results ('names','onsets','ends','duration') of each block
-names     = cell(length(timeLogger.block),1);
-onsets    = zeros(length(timeLogger.block),1);
-ends      = zeros(length(timeLogger.block),1);
-durations = zeros(length(timeLogger.block),1);
+names     = cell(length(timeLogger),1);
+onsets    = zeros(length(timeLogger),1);
+ends      = zeros(length(timeLogger),1);
+durations = zeros(length(timeLogger),1);
 
 for i=1:length(timeLogger.block)
-    names(i,1)     = timeLogger.block(i).names;
-    onsets(i,1)    = timeLogger.block(i).startTime;
-    ends(i,1)      = timeLogger.block(i).endTime;
-    durations(i,1) = timeLogger.block(i).length;
+    names(i,1)     = timeLogger(i).names;
+    onsets(i,1)    = timeLogger(i).startTime;
+    ends(i,1)      = timeLogger(i).endTime;
+    durations(i,1) = timeLogger(i).length;
 end
 
 %% KeyPresses and Times
@@ -286,9 +215,8 @@ end
 % responseTime = responseTime(responseTime > 0);
 % targetTime   = targetTime(targetTime > 0);
 
-%% Shutdown Procedures
-ShowCursor;
-clear screen;
+%% Take the total exp time
+PsychPortAudio('Close',pahandle);
 myTotalSecs=GetSecs;
 Experiment_duration = myTotalSecs - experimentStartTime;
 
@@ -297,19 +225,5 @@ Experiment_duration = myTotalSecs - experimentStartTime;
 save(['logFileFull_',SubjName,'.mat']);
 save(['logFile_',SubjName,'.mat'], 'names','onsets','durations','ends','targets','responseTime','responseKey','targetTime','Experiment_duration','playTime');
 
-
-%% FUNCTION
-% % close Serial Port ----  VERY IMPORTANT NOT FORGET
-% if strcmp(device,'Scanner')
-%     CloseSerialPort(SerPor);
-% end
-
-% catch
-    clear Screen;
-    fprintf('Code was catched!')
-%     %% Close serial port of the scanner IF CRASH OF THE CODE
-%     if strcmp(Cfg.device,'Scanner')
-%         CloseSerialPort(Cfg.SerPor);
-%     end
-    
-% end
+fprintf('POSITION IS OVER!!\n');
+end
