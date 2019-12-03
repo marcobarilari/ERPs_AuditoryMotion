@@ -6,11 +6,11 @@ function [trial_seq] = getTrialSeq(numTrials, percTarget)
 % with numTrails and percTarget it calculates the number of trials per
 % condition
 
-static = (numTrials*(100-percTarget))/100;
+static = (numTrials*(100-percTarget))/100/2;
 
-mot_LRRL = ((numTrials*(100-percTarget))/100)/2;
+mot_LRRL = ((numTrials*(100-percTarget))/100)/4;
 
-mot_RLLR = ((numTrials*(100-percTarget))/100)/2;
+mot_RLLR = ((numTrials*(100-percTarget))/100)/4;
 
 static_T = ((numTrials*(percTarget))/100)/2;
 
