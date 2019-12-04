@@ -40,7 +40,8 @@ end
 %% Initialize PsychToolbox
 % PsychDefaultSetup(2);
 % OPEN PARALLEL PORT HERE openparallelport_inpout32(hex2dec('d010'))
-openparallelport('D010');
+openparallelport('D010'); %
+
 InitializePsychSound(1) % 'reallyneedlowlatency' flag set to one to push really hard for low latency.
 numChannel = 2; % Number of channels for audio output  
 FS = 44100; % Sampling frequency of the sounds
