@@ -63,7 +63,7 @@ numcondition = length(soundfiles);
 %% InitializePsychAudio;
 InitializePsychSound(1);
 %OPEN AUDIO PORTS
-startPsych = GetSecs();
+% open audio port
 phandle = PsychPortAudio('Open',[],[],1,freq,2);
 
 
@@ -76,13 +76,11 @@ for icon = 1:numcondition
     SoundData{icon} = SoundData{icon}';
     
 end
-endPsych = GetSecs - startPsych; % not sure if we need this
 
 
 
 
 %% TRIGGER - OR NOT TRIGGER - HOW TRIGGER WORKS
-begin_trig = GetSecs();
 if strcmp(device,'test')
     
     % press key
@@ -110,9 +108,8 @@ elseif strcmp(device,'eeg')
 end
 
 
-Trigger_onset = GetSecs();
 fprintf('starting experiment \n');
-tot_trig = Trigger_onset - begin_trig;
+
 
 %% Experiment Start
 experimentStartTime = GetSecs();
@@ -221,8 +218,7 @@ end
 
 %% Take the total exp time
 PsychPortAudio('Close',phandle);
-myTotalSecs=GetSecs;
-Experiment_duration = myTotalSecs - experimentStartTime;
+Experiment_duration = GetSecs - experimentStartTime;
 
 %% Save a mat Log file
 % Onsets & durations are saved in seconds.
