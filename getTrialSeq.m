@@ -5,14 +5,16 @@ function [trial_seq_names,trial_seq] = getTrialSeq(numTrials, percTarget)
 %
 % with numTrails and percTarget it calculates the number of trials per
 % condition
-
+% 
+% outputs the trial sequence with numbers (trial_seq) or with names (trial_seq_names)
+%
 % number assigned order:
-% static 1
-% mot_LRRL 2
-% mot_RLLR 3
-% Static_T 4
-% mot_LRRL_T 5
-% mot_RLLR_T 6
+% 1     static
+% 2     mot_LRRL
+% 3     mot_RLLR
+% 4     Static_T
+% 5     mot_LRRL_T
+% 6     mot_RLLR_T
 
 % calculate how many trials per condition dividing them in 3 chunks to help
 % even randomization across experiment per condition
@@ -25,29 +27,38 @@ static_T = ((numTrials*(percTarget))/100)/2;
 mot_LRRL_T = ((numTrials*(percTarget))/100)/4;
 mot_RLLR_T = ((numTrials*(percTarget))/100)/4;
 
+% check that all of those values are integers
+if any(rem([static, mot_LRRL, mot_RLLR, static_T, mot_LRRL_T, mot_RLLR_T], 1)~=0)
+    error('that combination of number of trials and percentage of target is not possible')
+end
+
 % create the three chunks of condition and randomize them and check that: 
 % 1 - the target is not in the first trial
 % 2 - two target are not consecutive
 % 3 - there are no more them 3 same trials consecutive (less than that is impossible)
 
-d = 1;
+d = 1; % counter for trial number
 
 while d < numTrials*3-2
     
-    trial_seq = [ repmat(ones,1,static), repmat(2,1,mot_LRRL), ...
-        repmat(3,1,mot_RLLR), repmat(4,1,static_T), ...
-        repmat(5,1,mot_LRRL_T), repmat(6,1,mot_RLLR_T)];
+    % create a sequence of trials that contains 1 thirs of all the trials
+    trial_seq = [ ...
+        repmat(ones,1,static),  repmat(2,1,mot_LRRL),   repmat(3,1,mot_RLLR), ...
+        repmat(4,1,static_T),   repmat(5,1,mot_LRRL_T), repmat(6,1,mot_RLLR_T)];
     
+    % we shuffle each chunck and concatenate them
     trial_seq = [ Shuffle(trial_seq), Shuffle(trial_seq), Shuffle(trial_seq) ];
    
+    % scan through the trial sequence and checks all the conditions
     while d < length(trial_seq)-2
         
-        if d == 1 && trial_seq(d) > 3
+        if d == 1 && trial_seq(d) > 3 % no targets in the first trial
             d = 1;
             break
-        elseif trial_seq(d) > 3 && trial_seq(d+1) > 3
+        elseif trial_seq(d) > 3 && trial_seq(d+1) > 3 % avoid 2 consecutive targets
             d = 1;
             break
+            % avoid series 3 times the same conditions
         elseif trial_seq(d) ==  trial_seq(d+1) && trial_seq(d+1) ==  trial_seq(d+2) && trial_seq(d+2) ==  trial_seq(d+3)
             d = 1;
             break
