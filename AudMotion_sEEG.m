@@ -28,7 +28,7 @@ fprintf('Auditory ERPs \n\n')
 Init_pause = 3;
 ISI = 1.5;                                                                      % Interstimulus Interval between events in the block.
 % MAKE gaussian distribution of ISI later on.
-
+% average is 1.5 (after 1s sound, 1s min gap and max 2s)
 
 
 
@@ -43,6 +43,7 @@ ISI = 1.5;                                                                      
 %event_duration = stim_duration + ISI;                                          % 1 trial duration % NEED TO UPDATE IN THE LOOP
 numEvents = 120;                                                                % Number of trials
 percTarget = 10;                                                                % Percentage of trials as target
+% CALCULATE THE EXACT TIMING OF THE EXP AND PREPARE 4MIN AND 5 MIN
 freq = 44100;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                                               % 1 Cycle = one inward and outward motion together
@@ -52,8 +53,9 @@ soundfiles = {'static','mot_LRRL', 'mot_RLLR', 'static_T',...
 condition = {'static','motion','motion','static','motion','motion'};
 isTarget = [0 0 0 1 1 1];
 
-Event_order= getTrialSeq(numEvents, percTarget);                                %pseudorandomized events order: 2 MOTION + 1 static + 10% of targers
+[Event_names, Event_order]= getTrialSeq(numEvents, percTarget);                                %pseudorandomized events order: 2 MOTION + 1 static + 10% of targers
 %[rndstim_names, rndstim_order]= getTrialSeq(numEvents, percTarget);
+% [trial_seq_names,trial_seq]
 numEvents = length(Event_order);                                                %reassign it in case pseudorandomization provided less trial number
 numcondition = length(soundfiles);
 

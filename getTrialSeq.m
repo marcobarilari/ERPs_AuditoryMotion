@@ -63,10 +63,10 @@ for i = 1:length(trial_seq)
     trial_seq_names{end+1} = num2str(trial_seq(i)); %#ok<AGROW>
 end
 
-trial_seq_names(strcmpi(trial_seq_names,'1')) = {'Static'};
+trial_seq_names(strcmpi(trial_seq_names,'1')) = {'static'};
 trial_seq_names(strcmpi(trial_seq_names,'2')) = {'mot_LRRL'};
 trial_seq_names(strcmpi(trial_seq_names,'3')) = {'mot_RLLR'};
-trial_seq_names(strcmpi(trial_seq_names,'4')) = {'Static_T'};
+trial_seq_names(strcmpi(trial_seq_names,'4')) = {'static_T'};
 trial_seq_names(strcmpi(trial_seq_names,'5')) = {'mot_LRRL_T'};
 trial_seq_names(strcmpi(trial_seq_names,'6')) = {'mot_RLLR_T'};
 
