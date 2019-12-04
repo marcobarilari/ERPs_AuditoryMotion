@@ -40,6 +40,7 @@ jitter = rand(1,numEvents);                                                 % cr
                                                                             % MAKE uniform distribution of ISI later on.
                                                                             % average is 1.5 (after 1s sound, 1s min gap and max 2s)
 ISI = 1 +jitter;                                                            % a vector of interstimulus intervals for each event
+% CONSIDER MAKING JITTER BALANCED ACROSS CONDITIONS
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                                               % 1 Cycle = one inward and outward motion together
 %% Experimental Design
@@ -70,14 +71,19 @@ condition = {...
 
 isTarget = [0 0 0 1 1 1];
 
-
-
+%% Open parallel port 
+if strcmp(device,'eeg')
+    openparallelport('D010');
+elseif strcmp(device,'trial')
+    %assign number of trails to 15 
+    numEvents = 15;
+end
 
 %% InitializePsychAudio;
 InitializePsychSound(1);
 
 % open audio port
-phandle = PsychPortAudio('Open',[],[],1,freq,2);
+pahandle = PsychPortAudio('Open',[],[],1,freq,2);
 
 
 %load the buffer
@@ -91,32 +97,7 @@ for icon = 1:numcondition
 end
 
 
-
-%% TRIGGER - OR NOT TRIGGER - HOW TRIGGER WORKS
-
-if strcmp(device,'test')
-    
-    % press key
-    KbWait();
-    KeyIsDown=1;
-    while KeyIsDown>0
-        [KeyIsDown, ~, ~]=KbCheck;
-    end
-    
-    
-    % TRIGGER EEG?
-elseif strcmp(device,'eeg')
-    fprintf('Waiting For Trigger...');
-
-    %%%%%%%%
-    
-    %INSERT TIRGGER HERE ???
-    
-    %%%%%%%%
-
-end
-
-fprintf('starting experiment \n');
+fprintf('starting experiment... \n');
 
 
 %% Experiment Start
@@ -125,9 +106,8 @@ hold_expStart = experimentStartTime;
 WaitSecs(Init_pause);
 %% Loop starts
 
-targetTime   = [];
-responseKey  = [];
-responseTime = [];
+%targetTime   = [];
+
 
 eventOnsets =       zeros(1,numEvents);
 eventEnds =         zeros(1,numEvents);
@@ -137,58 +117,111 @@ playTime =          zeros(1,numEvents);
 
 
 
-for iEvent = 1:15 %numEvents
+for iEvent = 1:numEvents
     startEvent = GetSecs();
+    responseKey  = [];
+    responseTime = [];
+
     timeLogger(iEvent).startTime = GetSecs - experimentStartTime;                       % Get the start time of the event
     timeLogger(iEvent).condition = condition(Event_order(iEvent));                      % Get the condition of the event (motion or static)
     timeLogger(iEvent).names = soundfiles(Event_order(iEvent));                         % Get the name of the event
-    responseCount=0;
+    timeLogger(iEvent).ISI = ISI(iEvent);                                               % Get the ISI of the event
+
     
     Sound = SoundData{Event_order(iEvent)};                                     % Load the chosen sound
-    %%%%%%
+        
+    trigger = Event_order(iEvent);                                              %assign trigger to which sound will be played 
+    
     eventOnsets(iEvent)=GetSecs-experimentStartTime;                            % Get the onset time
     
-    PsychPortAudio('FillBuffer',phandle,Sound);                                % %Play the sound
-    playTime(1,iEvent) = PsychPortAudio('Start', phandle, [],[],1,startEvent+(length(Sound)/freq)); %
-    % playTime(iEvent,1) = PsychPortAudio('Start',phandle);
-    % startTime = GetSecs();
-    %%%%%%
+    PsychPortAudio('FillBuffer',pahandle,Sound);                                % fill the buffer 
     
-    % collect button press from the keyboard
-    while GetSecs() <= eventOnsets(iEvent)+ experimentStartTime + (length(Sound)/freq)
+    %send the trigger
+    if strcmp(device,'eeg')
+        sendparallelbyte(trigger);
         
-        [keyIsDown, secs, ~ ] = KbCheck();
+        %Play the sound
+        playTime(1,iEvent) = PsychPortAudio('Start', pahandle, [],[],1,startEvent+(length(Sound)/freq));
         
-        if keyIsDown
-            responseTime(end+1)= secs - experimentStartTime;
-            while keyIsDown ==1
-                [keyIsDown , ~] = KbCheck();
-            end
-            
-            responseCount = responseCount + 1;
-        end
+        %reset the parallel port
+        sendparallelbyte(0);
+        
+    else
+        %Play the sound
+        playTime(1,iEvent) = PsychPortAudio('Start', pahandle, [],[],1,startEvent+(length(Sound)/freq));
         
     end
+    
+    % playTime(iEvent,1) = PsychPortAudio('Start',phandle);
+    % startTime = GetSecs();
+
+    %%Wait for the ISI and register the responseKey
+    while (GetSecs-(playTime(1,iEvent)+(length(Sound)/freq)))<=(ISI(iEvent))
+        
+        [keyIsDown, secs, keyCode] = KbCheck(-1);
+        
+        if keyIsDown
+            
+            responseKey = KbName(find(keyCode));
+            responseTime = secs - experimentStartTime;
+            
+            %ecs key press - stop playing the sounds//script
+            if strcmp(responseKey,'ESCAPE')==1
+                % find(keyCode)== KbName('esc')
+                % If the script is stopped while a sequence is being
+                % played, it sends trigger 7
+                PsychPortAudio('Close', pahandle);
+                if strcmp(device,'eeg') %if sEEG (don't do that in the pc)
+                    sendparallelbyte(7)% triggers code for escape is 30
+                    sendparallelbyte(0)
+                end
+                return
+            end
+        end
+    end
+
+
+       
+%     %collect button press from the keyboard
+%     while GetSecs() <= eventOnsets(iEvent)+ experimentStartTime + (length(Sound)/freq)
+%         
+%         [keyIsDown, secs, ~ ] = KbCheck();
+%         
+%         if keyIsDown
+%             responseTime(end+1)= secs - experimentStartTime;
+%             while keyIsDown ==1
+%                 [keyIsDown , ~] = KbCheck();
+%             end
+%             
+%             responseCount = responseCount + 1;
+%         end
+%         
+%     end
     
     eventEnds(iEvent)=GetSecs-experimentStartTime;
     eventDurations(iEvent)=eventEnds(iEvent)-eventOnsets(iEvent);
     
-    WaitSecs(ISI); % either use WaitSecs(ISI) or below while loop
-    
+  %  WaitSecs(ISI(iEvent)); % either use WaitSecs(ISI) or below while loop
+  
     %below while loop does not work atm - 03.12.2019
     %     while eventDurations(iEvent)<(event_duration)                                % getting rid off possible delays -> wait in the while loop
     %     end                                                                          % for the exact length of stimulus + response gap = eventDuration
     %
     
-    responses(iEvent) = responseCount ;
-    timeLogger(iEvent).endTime = GetSecs - experimentStartTime;                 % Get the time for the block end
-    timeLogger(iEvent).length  = timeLogger(iEvent).endTime - timeLogger(iEvent).startTime;  %Get the block duration
+    % timeLogger(iEvent).length  = timeLogger(iEvent).endTime - timeLogger(iEvent).startTime;  %Get the total trial duration
+    timeLogger(iEvent).length  = eventDurations(iEvent);                               %Get the total trial duration
+    timeLogger(iEvent).endTime = eventEnds(iEvent);                                    % Get the time for the block end
+    timeLogger(iEvent).responseTime = responseTime;
+    timeLogger(iEvent).response = responseKey;
     timeLogger(iEvent).isTarget = isTarget(Event_order(iEvent));
-    timeLogger(iEvent).response = responses(iEvent);
-    % add response pressed or not // what is the response button?
-    % consider adding the ending of each sound, atm it's the event (sound +
-    % response gap)
+
+    timeLogger(iEvent).whichtrigger = trigger;
+    
+    
+    
     % consider adding WaitSec for ending?
+    % what would happen if esc key pressed? the logfile will be saved?
+    % CONSIDER what happens in case of buttonpress>1 time??
 end
 
 
@@ -240,7 +273,7 @@ end
 
 
 %% Take the total exp time
-PsychPortAudio('Close',phandle);
+PsychPortAudio('Close',pahandle);
 Experiment_duration = GetSecs - experimentStartTime;
 
 
