@@ -1,57 +1,27 @@
-function equate_rms_wav()
+function  equate_rms_wav()
 
-addpath(fullfile(pwd,'input_earfish'));
+file_dir = 'input_earfish';
 
-%% 250 MS
 reference_wav_fn = 'olivier_pnoise_250ms_Static_center.wav';
 
-target_wav_fn = 'olivier_pnoise_250ms_OS_down.wav';
-runFunction (reference_wav_fn,target_wav_fn)
+addpath(fullfile(pwd, file_dir));
 
-target_wav_fn = 'olivier_pnoise_250ms_OS_left.wav';
-runFunction (reference_wav_fn,target_wav_fn)
+file_list = dir('input_earfish/*.wav');
 
-target_wav_fn = 'olivier_pnoise_250ms_OS_right.wav';
-runFunction (reference_wav_fn,target_wav_fn)
+for i = 1:size(file_list,1)
+    
+    if ~contains(file_list(i).name, 'rms')
+        target_wav_fn = file_list(i).name;
+        fprintf('\n\n\n%s\n\n', target_wav_fn)
+        runFunction (reference_wav_fn,target_wav_fn,file_dir)
+    end
 
-target_wav_fn = 'olivier_pnoise_250ms_OS_up.wav';
-runFunction (reference_wav_fn,target_wav_fn)
-
-%% 500 ms
-target_wav_fn = 'olivier_pnoise_500ms_Static_center.wav';
-runFunction (reference_wav_fn,target_wav_fn)
-
-target_wav_fn = 'olivier_pnoise_500ms_OS_down.wav';
-runFunction (reference_wav_fn,target_wav_fn)
-
-target_wav_fn = 'olivier_pnoise_500ms_OS_left.wav';
-runFunction (reference_wav_fn,target_wav_fn)
-
-target_wav_fn = 'olivier_pnoise_500ms_OS_right.wav';
-runFunction (reference_wav_fn,target_wav_fn)
-
-target_wav_fn = 'olivier_pnoise_500ms_OS_up.wav';
-runFunction (reference_wav_fn,target_wav_fn)
-
-%% 1000 ms
-
-target_wav_fn = 'olivier_pnoise_1000ms_OS_left.wav';
-runFunction (reference_wav_fn,target_wav_fn)
-
-target_wav_fn = 'olivier_pnoise_1000ms_OS_right.wav';
-runFunction (reference_wav_fn,target_wav_fn)
-
-target_wav_fn = 'olivier_pnoise_1000ms_Static_center.wav';
-runFunction (reference_wav_fn,target_wav_fn)
-
-%% 2000 ms
-target_wav_fn = 'olivier_pnoise_2000ms_Static_center.wav';
-runFunction (reference_wav_fn,target_wav_fn)
+end
 
 end
 
 
-function runFunction (reference_wav_fn,target_wav_fn)
+function runFunction(reference_wav_fn,target_wav_fn,file_dir)
 %% This Script takes a file (target_wav_fn) and equates its rms with
 % another reference audio file (reference_wav_fn) amd gives the equated 
 % wav file as an output ('final_wave.wav')
@@ -83,7 +53,7 @@ disp(rms_final)
 %wavwrite(new_wave,'new_wave.wav')
 %audiowrite(target_wav_fn,final_wave,FS_reference)
 %wavwrite(final_wave,FS_reference,16,['rms_',target_wav_fn])
-audiowrite(['rms_',target_wav_fn],final_wave,FS_reference)
+audiowrite(fullfile(file_dir, ['rms_',target_wav_fn]),final_wave,FS_reference)
 %% plot the reference wav and final wav files
 figure()
 subplot(2,1,1)
