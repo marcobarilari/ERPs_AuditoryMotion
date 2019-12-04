@@ -1,4 +1,4 @@
-function [trial_seq_names,trial_seq] = getTrialSeq(numTrials, percTarget)
+function [trial_seq_names,trial_seq] = getTrialSeq(numTrials, numTargets)
 
 % function to create the randomization of all the conditions in the ERP -
 %motion experiemnt
@@ -18,15 +18,18 @@ function [trial_seq_names,trial_seq] = getTrialSeq(numTrials, percTarget)
 
 % calculate how many trials per condition dividing them in 3 chunks to help
 % even randomization across experiment per condition
-numTrials = numTrials/3;
 
-static = (numTrials*(100-percTarget))/100/2;
-mot_LRRL = ((numTrials*(100-percTarget))/100)/4;
-mot_RLLR = ((numTrials*(100-percTarget))/100)/4;
-static_T = ((numTrials*(percTarget))/100)/2;
-mot_LRRL_T = ((numTrials*(percTarget))/100)/4;
-mot_RLLR_T = ((numTrials*(percTarget))/100)/4;
+numTrials = numTrials/4;
+numTargets = numTargets/4;
 
+%%%%%%%%%%%%%% CB continue from here 
+static = numTrials- numTargets/2;
+mot_LRRL = ((numTrials- numTargets/2))/2;
+mot_RLLR = ((numTrials- numTargets/2))/2;
+static_T = numTargets/2;
+mot_LRRL_T = numTargets/4;
+mot_RLLR_T = numTargets/4;
+%%%%%%%%%%%%%%
 % check that all of those values are integers
 if any(rem([static, mot_LRRL, mot_RLLR, static_T, mot_LRRL_T, mot_RLLR_T], 1)~=0)
     error('that combination of number of trials and percentage of target is not possible')

@@ -26,42 +26,26 @@ fprintf('Auditory ERPs \n\n')
 %% Experiment Parametes
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Init_pause = 3;
-
-% Interstimulus Interval between events in the block
-ISI = 1.5;
-% MAKE uniform distribution of ISI later on.
-% average is 1.5 (after 1s sound, 1s min gap and max 2s)
-
-
-
-
-
-
-
-
-
-
-%stim_duration = 1; % Duration of 1 sound % NEED TO UPDATE IN THE LOOP
-%event_duration = stim_duration + ISI; % 1 trial duration % NEED TO UPDATE IN THE LOOP
-
-numEvents = 120; % Number of trials
-percTarget = 10; % Percentage of trials as target
-% CALCULATE THE EXACT TIMING OF THE EXP AND PREPARE 4MIN AND 5 MIN
 freq = 44100;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%stim_duration = 1;                                                             % Duration of 1 sound % NEED TO UPDATE IN THE LOOP
+%event_duration = stim_duration + ISI;                                          % 1 trial duration % NEED TO UPDATE IN THE LOOP
+
+numEvents = 96;                                                             % Number of trials
+numTargets = 8;                                                             % Percentage of trials as target
+
+ISI = 1;                                                                    % fixed minimum duration of Interstimulus Interval between events.
+jitter = rand(1,numEvents);                                                 % creating jitter with uniform distribution around 1
+                                                                            % MAKE uniform distribution of ISI later on.
+                                                                            % average is 1.5 (after 1s sound, 1s min gap and max 2s)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                                               % 1 Cycle = one inward and outward motion together
 %% Experimental Design
 
-% order IS important
-
-soundfiles = {...
-    'static',...
-    'mot_LRRL', ...
-    'mot_RLLR', ...
-    'static_T', ...
-    'mot_LRRL_T', ...
-    'mot_RLLR_T'};
-
+[Event_names, Event_order]= getTrialSeq(numEvents, numTargets);                                %pseudorandomized events order: 2 MOTION + 1 static + 10% of targers
+%[rndstim_names, rndstim_order]= getTrialSeq(numEvents, percTarget);
+% [trial_seq_names,trial_seq]
+numEvents = length(Event_order);                                                %reassign it in case pseudorandomization provided less trial number
 numcondition = length(soundfiles);
 
 condition = {...
