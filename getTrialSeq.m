@@ -1,4 +1,4 @@
-function [trial_seq_names,trial_seq] = getTrialSeq(expLength)
+function [trial_seq_names,trial_seq] = getTrialSeq(numEvents,numTargets,expLength)
 
 % function to create the randomization of all the conditions in the ERP -
 %motion experiemnt
@@ -22,16 +22,16 @@ switch expLength
     
     case 1
         
-        numTrials = 120/3;
+        numEvents = numEvents/3;
         
-        numTargets = 12/3;
+        numTargets = numTargets/3;
         
         % calculate how many trials per condition dividing them in 3 chunks to help
         % even randomization across experiment per condition
         
-        static = (numTrials-numTargets)/2;
-        mot_LRRL = (numTrials-numTargets)/4;
-        mot_RLLR = (numTrials-numTargets)/4;
+        static = (numEvents-numTargets)/2;
+        mot_LRRL = (numEvents-numTargets)/4;
+        mot_RLLR = (numEvents-numTargets)/4;
         static_T = numTargets/2;
         mot_LRRL_T = numTargets/4;
         mot_RLLR_T = numTargets/4;
@@ -43,7 +43,7 @@ switch expLength
         
         d = 1; % counter for trial number
         
-        while d < numTrials*3-2
+        while d < numEvents*3-2
             
             % create a sequence of trials that contains 1 thirs of all the trials
             trial_seq = [ ...
@@ -74,16 +74,16 @@ switch expLength
         
     case 2
         
-        numTrials = 88;
+        numEvents = numEvents/2;
         
-        numTargets = 8;
+        numTargets = numTargets/2;
         
         % calculate how many trials per condition dividing them in 3 chunks to help
         % even randomization across experiment per condition
         
-        static = (numTrials-numTargets)/2;
-        mot_LRRL = (numTrials-numTargets)/4;
-        mot_RLLR = (numTrials-numTargets)/4;
+        static = (numEvents-numTargets)/2;
+        mot_LRRL = (numEvents-numTargets)/4;
+        mot_RLLR = (numEvents-numTargets)/4;
         static_T = numTargets/2;
         mot_LRRL_T = numTargets/4;
         mot_RLLR_T = numTargets/4;
@@ -95,7 +95,7 @@ switch expLength
         
         d = 1; % counter for trial number
         
-        while d < numTrials*2-2
+        while d < numEvents*2-2
             
             % create a sequence of trials that contains 1 thirs of all the trials
             trial_seq = [ ...
@@ -126,16 +126,16 @@ switch expLength
         
     case 3
         
-        numTrials = 64/2;
+        numEvents = numEvents/2;
         
-        numTargets = 8/2;
+        numTargets = numTargets/2;
         
         % calculate how many trials per condition dividing them in 3 chunks to help
         % even randomization across experiment per condition
         
-        static = (numTrials-numTargets)/2;
-        mot_LRRL = (numTrials-numTargets)/4;
-        mot_RLLR = (numTrials-numTargets)/4;
+        static = (numEvents-numTargets)/2;
+        mot_LRRL = (numEvents-numTargets)/4;
+        mot_RLLR = (numEvents-numTargets)/4;
         static_T = numTargets/2;
         mot_LRRL_T = numTargets/4;
         mot_RLLR_T = numTargets/4;
@@ -147,7 +147,7 @@ switch expLength
         
         d = 1; % counter for trial number
         
-        while d < numTrials*2-2
+        while d < numEvents*2-2
             % create a sequence of trials that contains 1 thirs of all the trials
             trial_seq = [ ...
                 repmat(ones,1,static),  repmat(2,1,mot_LRRL),   repmat(3,1,mot_RLLR), ...

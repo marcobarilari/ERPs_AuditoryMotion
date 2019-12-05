@@ -20,15 +20,15 @@ fprintf('Connected Device is %s \n\n',device);
 
 %% Start me up
 % get the subject Name
-SubjName = input('Subject Name: ','s');
-Run = input('run n.: ','s');
+SubjName = input('\nSubject Name: ','s');
+Run = input('\nrun n.: ','s');
 
 % here is prompt a multiverse scenario in witch you can choos n. of trials
 % and therefore the length of the experiment
-fprintf('\n\n case 1 - 54 trials per condition (Motion & Static) + ~10%% targets (n.12) for ~5 min, to repeat at least 2 times\n')
-fprintf('\n case 2 - 40 trials per condition (Motion & Static) + ~9%% targets (n.8) for ~4 min, to repeat at least 3 times\n')
-fprintf('\n case 3 - 28 trials per condition (Motion & Static) + ~12%% targets (n.8) for ~3 min, to repeat at least 4 times\n\n')
-
+fprintf('\n\n case 1 - 54 trials per condition (Motion & Static) + ~10%% targets (n.12) \n          for ~5 min, to repeat at least 2 times\n')
+fprintf('\n case 2 - 40 trials per condition (Motion & Static) + ~9%% targets (n.8) \n          for ~4 min, to repeat at least 3 times\n')
+fprintf('\n case 3 - 28 trials per condition (Motion & Static) + ~12%% targets (n.8) \n          for ~3 min, to repeat at least 4 times\n\n')
+ 
 expLength = input('length of th exp. [1 - 2 - 3]: ','s');
 fprintf('\n')
 if isempty(SubjName)
@@ -45,16 +45,20 @@ fprintf('Auditory ERPs \n\n')
 Init_pause = 0;
 freq = 44100;
 
-% >>> why we need them?
-
-% number of trials
-numEvents = 96;
-
-% percentage of trials as target;                                                            
-%percentTrials = 10;
-
-% correspond to 8.3333333% of the total n of trials
-numTargets = 8;                                                            
+switch str2num(expLength)
+    
+    case 1
+        % number of trials
+        numEvents = 120;
+        % n of target trials
+        numTargets = 12;
+    case 2
+        numEvents = 88;
+        numTargets = 8;
+    case 3
+        numEvents = 64;
+        numTargets = 8;
+end                                                       
 
 % creating jitter with uniform distribution around 1 average is 1.5 (after 
 %1s sound, 1s min gap and max 2s)
@@ -87,7 +91,7 @@ fprintf(fid, 'SubjID\tExp_trial\tCondition\tSoundfile\tTarget\tTrigger\tISI\tEve
 %% Experimental Design
 
 % pseudorandomized events order: 2 MOTION + 1 static + 10% of targers
-[Event_names, Event_order]= getTrialSeq(expLength);          
+[Event_names, Event_order]= getTrialSeq(numEvents,numTargets,expLength);          
 
 % reassign it in case pseudorandomization provided less trial number
 numEvents = length(Event_order); 
