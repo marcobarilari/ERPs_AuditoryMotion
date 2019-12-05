@@ -1,14 +1,14 @@
 function  equate_rms_wav()
 
 % input the folder with the audio files
-file_dir = 'input_earfish';
-
-% select the reference audio file
-reference_wav_fn = 'olivier_pnoise_250ms_Static_center.wav';
+file_dir = 'input_lepoulpe/500ms'; % input_lepoulpe %input_earfish
 
 % read the wav file in the target folder
 addpath(fullfile(pwd, file_dir));
-file_list = dir('input_earfish/*.wav');
+file_list = dir([file_dir,'/*.wav']);
+
+% select the reference audio file
+reference_wav_fn = 'Downward_500ms.wav';
 
 % select only the audio file that are not rms-ed already and rms them 
 for i = 1:size(file_list,1)
