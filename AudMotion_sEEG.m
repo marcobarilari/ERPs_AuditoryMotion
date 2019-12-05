@@ -19,8 +19,12 @@ fprintf('Connected Device is %s \n\n',device);
 %% Start me up
 % get the subject Name
 SubjName = input('Subject Name: ','s');
+Run = input('run n.: ','s');
 if isempty(SubjName)
     SubjName = 'test';
+end
+if isempty(Run)
+    Run=99;
 end
 
 fprintf('Auditory ERPs \n\n')
@@ -53,6 +57,7 @@ DateFormat = 'yyyy_mm_dd_HH_MM';
 
 Filename = fullfile(pwd, 'output', ...
     ['sub-' SubjName, ...
+    '_run-' Run, ...
     '_' datestr(now, DateFormat) '.tsv']);
 
 % prepare for the output
@@ -231,10 +236,10 @@ for iEvent = 1:numEvents
     timeLogger(iEvent).isTarget = isTarget(Event_order(iEvent));
     timeLogger(iEvent).whichtrigger = trigger;                               
     
-    fprintf(fid,'%s\t%d\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%s\t%d\n',...
-        SubjName,iEvent,string(condition(Event_order(iEvent))),string(soundfiles(Event_order(iEvent))), ...
-        isTarget(Event_order(iEvent)),trigger,timeLogger(iEvent).startTime, ...
-        ISI(iEvent),eventEnds(iEvent),eventDurations(iEvent), ...
+    fprintf(fid,'%s\t %d\t %s\t %s\t %d\t %d\t %f\t %f\t %f\t %f\t %s\t %f\n',...
+        SubjName, iEvent, string(condition(Event_order(iEvent))), string(soundfiles(Event_order(iEvent))), ...
+        isTarget(Event_order(iEvent)), trigger ,timeLogger(iEvent).startTime, ...
+        ISI(iEvent) ,eventEnds(iEvent) ,eventDurations(iEvent), ...
         responseKey,responseTime);
        
     % consider adding WaitSec for ending?
@@ -263,8 +268,8 @@ Experiment_duration = GetSecs - experimentStartTime;
 
 %% Save a mat Log file
 % Onsets & durations are saved in seconds.
-save(fullfile(pwd,['logFileFull_', SubjName, '.mat']));
-save(fullfile(pwd,['logFile_', SubjName, '.mat']), ...
+save(fullfile(pwd, 'output', ['logFileFull_', SubjName, '_run-' Run, '.mat']));
+save(fullfile(pwd, 'output', ['logFile_', SubjName, '_run-' Run,'.mat']), ...
     'names', 'onsets', 'durations', 'ends', 'responseTime', ...
     'responseKey', 'Experiment_duration', 'playTime');
 
