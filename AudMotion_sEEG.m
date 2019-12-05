@@ -298,7 +298,7 @@ fprintf('\nSequence IS OVER!!\n');
 fprintf('\n==================\n\n');
 
 fprintf('\nyou have tested %d trials for STATIC and %d trials for MOTION conditions\n\n', ...
-    (numEvents*(100-percentTrials))/100/2, (numEvents*(100-percentTrials))/100/2);
+    (numEvents-numTargets)/2, (numEvents-numTargets)/2);
 
 fprintf('\nexp. duration was %f minutes\n\n', expTime/60);
 
