@@ -4,6 +4,11 @@
 % Adapted by M.Rezk to localize MT/MST (Huk,2002)
 % Simplify the ALocaliser fmri experiment for ERPs
 
+% simply run the script and press enter instead of specifying the
+% SubjectName
+
+
+
 clear all;
 clc
 
