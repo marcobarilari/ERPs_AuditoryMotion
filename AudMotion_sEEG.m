@@ -27,16 +27,10 @@ fprintf('Auditory ERPs \n\n')
 
 %% Experiment Parametes
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Init_pause = 3;
+Init_pause = 0;
 freq = 44100;
 
 % >>> why we need them?
-
-% duration of 1 sound % NEED TO UPDATE IN THE LOOP
-%stim_duration = 1;
-
-% 1 trial duration % NEED TO UPDATE IN THE LOOP
-%event_duration = stim_duration + ISI;                                      
 
 % number of trials
 numEvents = 120;
