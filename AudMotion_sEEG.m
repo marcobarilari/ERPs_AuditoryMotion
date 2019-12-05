@@ -53,7 +53,23 @@ jitter = rand(1,numEvents);
 % CONSIDER MAKING JITTER BALANCED ACROSS CONDITIONS
 
 % a vector of interstimulus intervals for each event
-ISI = 1 + jitter;                                                           
+ISI = 1 + jitter;   
+
+DateFormat = 'yyyy_mm_dd_HH_MM';
+
+Filename = fullfile(pwd, 'output', ...
+    ['sub-' SubjName, ...
+    '_' datestr(now, DateFormat) '.tsv']);
+
+% prepare for the output
+% ans 7 means that a directory exist
+if exist('output', 'dir') ~= 7 
+    mkdir('output');
+end
+
+% open a tsv file to write the output
+fid = fopen(Filename, 'a');
+fprintf(fid, 'SubjID\tExp_trial\tCondition\tSoundfile\tTarget\tTrigger\tISI\tEvent_start\tEvent_end\tEvent_duration\tResponse\tRT\n');  
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Experimental Design
@@ -165,6 +181,10 @@ for iEvent = 1:numEvents
         
     else
         
+        % assign trigger to which sound will be played anyway,it will go in
+        % the outputfile
+        trigger = Event_order(iEvent);   
+        
         % get the onset time
         eventOnsets(iEvent)=GetSecs-experimentStartTime;
         
@@ -215,10 +235,14 @@ for iEvent = 1:numEvents
     timeLogger(iEvent).responseTime = responseTime;
     timeLogger(iEvent).response = responseKey;
     timeLogger(iEvent).isTarget = isTarget(Event_order(iEvent));
-    timeLogger(iEvent).whichtrigger = trigger;
+    timeLogger(iEvent).whichtrigger = trigger;                               
     
-    
-    
+    fprintf(fid,'%s\t%d\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%s\t%d\n',...
+        SubjName,iEvent,string(condition(Event_order(iEvent))),string(soundfiles(Event_order(iEvent))), ...
+        isTarget(Event_order(iEvent)),trigger,timeLogger(iEvent).startTime, ...
+        ISI(iEvent),eventEnds(iEvent),eventDurations(iEvent), ...
+        responseKey,responseTime);
+       
     % consider adding WaitSec for ending?
     % what would happen if esc key pressed? the logfile will be saved? 
     % >>> NO, I added the tsv file so that in case of escape or crash we
@@ -245,9 +269,11 @@ Experiment_duration = GetSecs - experimentStartTime;
 
 %% Save a mat Log file
 % Onsets & durations are saved in seconds.
-save(['logFileFull_', SubjName, '.mat']);
-save(['logFile_', SubjName, '.mat'], ...
+save(fullfile(pwd,['logFileFull_', SubjName, '.mat']));
+save(fullfile(pwd,['logFile_', SubjName, '.mat']), ...
     'names', 'onsets', 'durations', 'ends', 'responseTime', ...
     'responseKey', 'Experiment_duration', 'playTime');
+
+fclose(fid);
 
 fprintf('Sequence IS OVER!!\n');
