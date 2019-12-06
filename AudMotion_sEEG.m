@@ -10,6 +10,10 @@
 
 % CB 06.12.2019 when esc-delete is pressed there is no logfile output!!!!
 
+% NOTES:
+% when the response is given while the sound is played, it can be
+% understood in the logfile, because of the time stamp.
+
 clear all;  %#ok<CLALL>
 clc
 
@@ -17,8 +21,8 @@ tic
 
 %% set trial or real experiment
 % device = 'eeg'; % any sound card, triggers through parallel port
-device = 'RME_RCAtrig'; % works with RME sound card and sends one trigger value through RCA cable (trigger box) 
-% device = 'trial'; % any sound card, no triggers (parallel port not open)
+% device = 'RME_RCAtrig'; % works with RME sound card and sends one trigger value through RCA cable (trigger box) 
+device = 'trial'; % any sound card, no triggers (parallel port not open)
 
 fprintf('Connected Device is %s \n\n',device);
 
