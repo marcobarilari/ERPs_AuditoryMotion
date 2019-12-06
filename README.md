@@ -14,6 +14,10 @@ Stimuli:
 
 - Target: Sequence1 - Left ; Sequence2 - Right
 
+### Task
+
+Detect the lower amplitude direction
+
 ## ERP
 
 Adapted from Mohamed Rezk 'ALocaliser fMRI experiment' in order to be run in (s)EEG
@@ -27,6 +31,10 @@ It can be run with 3 different lengths that are prompted at the begging after th
 - case 2 - 40 trials per condition (Motion & Static) + ~9% targets (n.8) for ~4 min, to repeat at least 3 times
 
 - case 3 - 28 trials per condition (Motion & Static) + ~12%% targets (n.8) for ~3 min, to repeat at least 4 times
+
+### Task
+
+Detect the longer audio file 
 
 ### output
 
