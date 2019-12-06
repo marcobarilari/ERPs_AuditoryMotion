@@ -227,11 +227,7 @@ for iEvent = 1:numEvents
                 PsychPortAudio('Close', pahandle);
                 
                 % if sEEG (don't do that in the pc)
-                if strcmp(device,'eeg') 
-                    
-                    
-                    
-                    
+                if strcmp(device,'eeg')
                     
                     % Is it possible to not hard code the trigger values in
                     % here and instead have them as variable at the top of
@@ -242,23 +238,57 @@ for iEvent = 1:numEvents
                     % and not have to go and look into getSeqTrials to
                     % figure it out.
                     
-                    % triggers code for escape is 30 >>> ?
+                    % triggers code for escape is 7
                     sendparallelbyte(7)
                     sendparallelbyte(0)
-                    
-                    
-                    
-                    
-                    
-                    
                     
                 end
                 
                 return
                 
+            else
+                if strcmp(device,'eeg')
+                    % trigger code for any keypress is 20
+                    sendparallelbyte(20);
+                    while keyIsDown % Waits for space key to be released to continue
+                        [keyIsDown, pressedSecs, keyCode] = KbCheck(-1);
+                    end
+                    sendparallelbyte(0)
+                    
+                end
             end
+            
         end
     end
+    
+    %%%%%%%%%
+    
+            while status.Active==1;
+            status = PsychPortAudio('GetStatus', pahandle);
+            [keyIsDown, pressedSecs, keyCode] = KbCheck(-1);
+            if keyIsDown
+                if find(keyCode)== KbName('esc') %% PUT ESCAPE HERE
+                    % If the script is stopped while a sequence is being
+                    % played, it sends trigger 6
+                    PsychPortAudio('Close', pahandle);
+                    sendparallelbyte(6)
+                    sca
+                    sendparallelbyte(0)
+                    return
+                elseif find(keyCode)== KbName('space')
+                    % If space bar is pressed (attention task), trigger 5
+                    % is sent
+                    sendparallelbyte(5); 
+                    while keyIsDown % Waits for space key to be released to continue
+                        [keyIsDown, pressedSecs, keyCode] = KbCheck(-1);
+                    end
+                    sendparallelbyte(0)
+                end
+            end
+        end
+    
+    
+    %%%%%%%%
     
     eventEnds(iEvent)=GetSecs-experimentStartTime;
     eventDurations(iEvent)=eventEnds(iEvent)-eventOnsets(iEvent);
