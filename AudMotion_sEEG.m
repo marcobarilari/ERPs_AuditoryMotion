@@ -229,9 +229,29 @@ for iEvent = 1:numEvents
                 % if sEEG (don't do that in the pc)
                 if strcmp(device,'eeg') 
                     
+                    
+                    
+                    
+                    
+                    % Is it possible to not hard code the trigger values in
+                    % here and instead have them as variable at the top of
+                    % the script --> this will help Francesca for analysis
+                    % and future us if we want to change those values
+                    % quickly
+                    % Ideally we should also know what each trigger means
+                    % and not have to go and look into getSeqTrials to
+                    % figure it out.
+                    
                     % triggers code for escape is 30 >>> ?
                     sendparallelbyte(7)
                     sendparallelbyte(0)
+                    
+                    
+                    
+                    
+                    
+                    
+                    
                 end
                 
                 return
