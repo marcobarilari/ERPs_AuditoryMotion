@@ -7,14 +7,17 @@
 % simply run the script and press enter instead of specifying the
 % SubjectName
 
+% CB 06.12.2019 when esc-delete is pressed there is no logfile output!!!!
+
 clear all;  %#ok<CLALL>
 clc
 
 tic
 
 %% set trial or real experiment
-% device = 'eeg';
-device = 'trial';
+% device = 'eeg'; % any sound card, triggers through parallel port
+device = 'RME_RCAtrig'; % works with RME sound card and sends one trigger value through RCA cable (trigger box) 
+% device = 'trial'; % any sound card, no triggers (parallel port not open)
 
 fprintf('Connected Device is %s \n\n',device);
 
@@ -119,26 +122,49 @@ isTarget = [0 0 0 1 1 1];
 %% Open parallel port 
 if strcmp(device,'eeg')
     openparallelport('D010');
-elseif strcmp(device,'trial')
+elseif any(strcmp(device,{'trial','RME_RCAtrig'}))
     % assign number of trails to 15 
 %     numEvents = 15;
 end
 
 %% InitializePsychAudio;
-InitializePsychSound(1);
 
-% open audio port
-pahandle = PsychPortAudio('Open',[],[],1,freq,2);
+new_amp = 0.2; % multiply the audio by this value to decrease the volume
 
 % load all the sounds
 for icon = 1:numcondition
     
     chosen_file{icon} = [soundfiles{icon},'.wav'];
     filename = fullfile('stimuli',SubjName,chosen_file{icon}); 
-    [SoundData{icon},~]=audioread(filename);
+    [SoundData{icon},~]=audioread(filename); 
+    SoundData{icon} = SoundData{icon} .* new_amp; 
     SoundData{icon} = SoundData{icon}';
     
 end
+
+
+InitializePsychSound(1);
+
+% open audio port
+if any(strcmp(device,{'trial','eeg'}))
+    
+   pahandle = PsychPortAudio('Open',[],[],1,freq,2);
+ 
+elseif any(strcmp(device,{'RME_RCAtrig'}))
+    
+    audio_devices = PsychPortAudio('GetDevices'); 
+    dev_idx = find(~cellfun(@isempty, regexpi({audio_devices.DeviceName},'Fireface UC Mac'))); 
+    devID = audio_devices(dev_idx).DeviceIndex; 
+%     dev_n_channels = audio_devices(dev_idx).NrOutputChannels; 
+    dev_n_channels = 4; 
+    pahandle = PsychPortAudio('Open', devID, [], 3, freq, dev_n_channels);% pahandle = PsychPortAudio('Open' [, deviceid][, mode][, reqlatencyclass][, freq][, channels][, buffersize][, suggestedLatency][, selectchannels][, specialFlags=0]);
+    
+    
+    addpath(genpath('lib')); 
+    sound_vol = PTB_volGUI_RME('pahandle',pahandle,'sound',SoundData{1},'nchan',dev_n_channels,'volume',0.01); 
+
+end
+
 
 fprintf('starting experiment... \n');
 
@@ -165,8 +191,9 @@ for iEvent = 1:numEvents
     responseKey  = [];
     responseTime = [];
 
-    % get the start time of the event
-    timeLogger(iEvent).startTime = GetSecs - experimentStartTime; %#ok<*SAGROW>
+        
+    % get the onset time
+    eventOnsets(iEvent)=GetSecs-experimentStartTime;
     % get the condition of the event (motion or static)
     timeLogger(iEvent).condition = condition(Event_order(iEvent));
     % get the name of the event
@@ -177,8 +204,24 @@ for iEvent = 1:numEvents
     % Load the chosen sound
     Sound = SoundData{Event_order(iEvent)};  
     
+    
     % fill the buffer 
-    PsychPortAudio('FillBuffer',pahandle,Sound);                        
+    if any(strcmp(device,{'trial','eeg'}))
+
+        PsychPortAudio('FillBuffer',pahandle,Sound);                        
+
+    elseif any(strcmp(device,{'RME_RCAtrig'}))
+
+        trig_pulse = zeros(1, length(Sound)); 
+        trig_pulse(1:round(0.100*freq)) = 1; 
+        s_out = zeros(dev_n_channels, length(Sound)); 
+        s_out(1,:) = Sound(1,:); % left earphone
+        s_out(2,:) = Sound(2,:); % right earphone
+        s_out(3,:) = trig_pulse; % trigger pulse
+        
+        PsychPortAudio('FillBuffer',pahandle,s_out);                        
+    end
+    
     
     % send the trigger
     if strcmp(device,'eeg')
@@ -187,11 +230,14 @@ for iEvent = 1:numEvents
 
         % assign trigger to which sound will be played     
         trigger = Event_order(iEvent);   
-        sendparallelbyte(trigger);
         
         % play the sound
-        playTime(1,iEvent) = PsychPortAudio('Start', pahandle, [],[],1,startEvent+(length(Sound)/freq));
+        playTime(1,iEvent) = PsychPortAudio('Start', pahandle, [],[], 1);
         
+        % send the trigger 
+        sendparallelbyte(trigger);
+        % wait for 100 ms
+        WaitSecs(0.100); 
         %reset the parallel port
         sendparallelbyte(0);
         
@@ -200,14 +246,15 @@ for iEvent = 1:numEvents
         % assign trigger to which sound will be played anyway,it will go in
         % the outputfile
         trigger = Event_order(iEvent);   
-        
-        % get the onset time
-        eventOnsets(iEvent)=GetSecs-experimentStartTime;
-        
+
         %Play the sound
-        playTime(1,iEvent) = PsychPortAudio('Start', pahandle, [],[],1,startEvent+(length(Sound)/freq));
+        playTime(1,iEvent) = PsychPortAudio('Start', pahandle, [],[],1);
         
     end
+    
+    % log the start time of the sound
+    timeLogger(iEvent).startTime = playTime(1,iEvent) - experimentStartTime; %#ok<*SAGROW>
+    
     
     % wait for the ISI and register the responseKey
     while (GetSecs-(playTime(1,iEvent)+(length(Sound)/freq))) <= (ISI(iEvent))
@@ -220,7 +267,7 @@ for iEvent = 1:numEvents
             responseTime = secs - experimentStartTime;
             
             % ecs key press - stop playing the sounds//script
-            if strcmp(responseKey,'ESCAPE')==1
+            if strcmp(responseKey,'DELETE')==1
                 
                 % If the script is stopped while a sequence is being
                 % played, it sends trigger 7
@@ -228,7 +275,6 @@ for iEvent = 1:numEvents
                 
                 % if sEEG (don't do that in the pc)
                 if strcmp(device,'eeg')
-                    
                     % Is it possible to not hard code the trigger values in
                     % here and instead have them as variable at the top of
                     % the script --> this will help Francesca for analysis
@@ -241,7 +287,6 @@ for iEvent = 1:numEvents
                     % triggers code for escape is 7
                     sendparallelbyte(7)
                     sendparallelbyte(0)
-                    
                 end
                 
                 return
@@ -250,45 +295,13 @@ for iEvent = 1:numEvents
                 if strcmp(device,'eeg')
                     % trigger code for any keypress is 20
                     sendparallelbyte(20);
-                    while keyIsDown % Waits for space key to be released to continue
-                        [keyIsDown, pressedSecs, keyCode] = KbCheck(-1);
-                    end
+                    WaitSecs(0.100); 
                     sendparallelbyte(0)
-                    
                 end
             end
             
         end
     end
-    
-    %%%%%%%%%
-    
-            while status.Active==1;
-            status = PsychPortAudio('GetStatus', pahandle);
-            [keyIsDown, pressedSecs, keyCode] = KbCheck(-1);
-            if keyIsDown
-                if find(keyCode)== KbName('esc') %% PUT ESCAPE HERE
-                    % If the script is stopped while a sequence is being
-                    % played, it sends trigger 6
-                    PsychPortAudio('Close', pahandle);
-                    sendparallelbyte(6)
-                    sca
-                    sendparallelbyte(0)
-                    return
-                elseif find(keyCode)== KbName('space')
-                    % If space bar is pressed (attention task), trigger 5
-                    % is sent
-                    sendparallelbyte(5); 
-                    while keyIsDown % Waits for space key to be released to continue
-                        [keyIsDown, pressedSecs, keyCode] = KbCheck(-1);
-                    end
-                    sendparallelbyte(0)
-                end
-            end
-        end
-    
-    
-    %%%%%%%%
     
     eventEnds(iEvent)=GetSecs-experimentStartTime;
     eventDurations(iEvent)=eventEnds(iEvent)-eventOnsets(iEvent);
@@ -309,10 +322,6 @@ for iEvent = 1:numEvents
         timeLogger(iEvent).startTime, eventEnds(iEvent), eventDurations(iEvent), ...
         responseKey, responseTime);
        
-    % consider adding WaitSec for ending?
-    % what would happen if esc key pressed? the logfile will be saved? 
-    % >>> NO, I added the tsv file so that in case of escape or crash we
-    % have the data anyway
     % CONSIDER what happens in case of buttonpress>1 time??
 end
 

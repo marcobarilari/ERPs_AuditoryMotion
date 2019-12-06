@@ -1,0 +1,18 @@
+SubjID	Exp_trial	Condition	Soundfile	Target	Trigger	ISI	Event_start	Event_end	Event_duration	Response	RT
+test	 1	 static	 static	 0	 1	 1.814724	 0.028268	 2.843310	 2.833229	 	 
+test	 2	 motion	 mot_RLLR	 0	 3	 1.905792	 2.859766	 5.765807	 2.910739	 	 
+test	 3	 motion	 mot_RLLR	 0	 3	 1.126987	 5.770854	 7.898135	 2.129980	 	 
+test	 4	 motion	 mot_LRRL	 0	 2	 1.913376	 7.903853	 10.817895	 2.916280	 	 
+test	 5	 static	 static	 0	 1	 1.632359	 10.820655	 13.453252	 2.634915	 space	 11.588593
+test	 6	 motion	 mot_LRRL	 0	 2	 1.097540	 13.457822	 15.556263	 2.100907	 space	 15.419004
+test	 7	 motion	 mot_LRRL	 0	 2	 1.278498	 15.558757	 17.838128	 2.281279	 space	 17.633965
+test	 8	 static	 static	 0	 1	 1.546882	 17.840644	 20.388289	 2.549691	 k	 19.520480
+test	 9	 static	 static	 0	 1	 1.957507	 20.391734	 23.350234	 2.960419	 d	 22.046754
+test	 10	 motion	 mot_RLLR	 0	 3	 1.964889	 23.352616	 26.317963	 2.967212	 a	 24.727193
+test	 11	 static	 static	 0	 1	 1.157613	 26.320210	 28.477984	 2.159581	 s	 27.186471
+test	 12	 static	 static_T	 1	 4	 1.970593	 28.481461	 32.452824	 3.974372	 q	 29.203437
+test	 13	 motion	 mot_LRRL	 0	 2	 1.957167	 32.455078	 35.412415	 2.959126	 	 
+test	 14	 static	 static	 0	 1	 1.485376	 35.415370	 37.900955	 2.487697	 space	 36.858017
+test	 15	 motion	 mot_LRRL	 0	 2	 1.800280	 37.903602	 40.704578	 2.803003	 u	 39.149380
+test	 16	 motion	 mot_RLLR	 0	 3	 1.141886	 40.707070	 42.849640	 2.144599	 1!	 41.835272
+test	 17	 static	 static	 0	 1	 1.421761	 42.852130	 45.274288	 2.423990	 s	 44.150847

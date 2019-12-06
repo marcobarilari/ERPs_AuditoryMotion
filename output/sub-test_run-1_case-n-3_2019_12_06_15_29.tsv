@@ -1,0 +1,27 @@
+SubjID	Exp_trial	Condition	Soundfile	Target	Trigger	ISI	Event_start	Event_end	Event_duration	Response	RT
+test	 1	 static	 static	 0	 1	 1.814724	 0.034597	 2.849857	 2.831253	 	 
+test	 2	 motion	 mot_RLLR	 0	 3	 1.905792	 2.870856	 5.776968	 2.911006	 	 
+test	 3	 motion	 mot_RLLR	 0	 3	 1.126987	 5.781944	 7.909725	 2.130462	 	 
+test	 4	 motion	 mot_LRRL	 0	 2	 1.913376	 7.912721	 10.826246	 2.915360	 	 
+test	 5	 static	 static	 0	 1	 1.632359	 10.828888	 13.461689	 2.635000	 	 
+test	 6	 motion	 mot_LRRL	 0	 2	 1.097540	 13.464740	 15.562965	 2.100012	 	 
+test	 7	 motion	 mot_LRRL	 0	 2	 1.278498	 15.565357	 17.844844	 2.281415	 	 
+test	 8	 static	 static	 0	 1	 1.546882	 17.847244	 20.395025	 2.549754	 	 
+test	 9	 static	 static	 0	 1	 1.957507	 20.397381	 23.355723	 2.960221	 	 
+test	 10	 motion	 mot_RLLR	 0	 3	 1.964889	 23.360849	 26.326737	 2.967905	 	 
+test	 11	 static	 static	 0	 1	 1.157613	 26.329396	 28.487916	 2.160479	 	 
+test	 12	 static	 static_T	 1	 4	 1.970593	 28.491645	 32.462981	 3.974547	 	 
+test	 13	 motion	 mot_LRRL	 0	 2	 1.957167	 32.465262	 35.422678	 2.959286	 	 
+test	 14	 static	 static	 0	 1	 1.485376	 35.425554	 37.911383	 2.487674	 	 
+test	 15	 motion	 mot_LRRL	 0	 2	 1.800280	 37.913922	 40.715088	 2.803149	 	 
+test	 16	 motion	 mot_RLLR	 0	 3	 1.141886	 40.717390	 42.859803	 2.144242	 	 
+test	 17	 static	 static	 0	 1	 1.421761	 42.862134	 45.284681	 2.424464	 	 
+test	 18	 static	 static	 0	 1	 1.915736	 45.286874	 48.202710	 2.917606	 	 
+test	 19	 motion	 mot_LRRL	 0	 2	 1.792207	 48.205034	 50.997954	 2.794803	 	 
+test	 20	 motion	 mot_RLLR	 0	 3	 1.959492	 51.000248	 53.959836	 2.961459	 	 
+test	 21	 motion	 mot_RLLR	 0	 3	 1.655741	 53.962217	 56.618744	 2.658409	 	 
+test	 22	 motion	 mot_LRRL	 0	 2	 1.035712	 56.621240	 58.657547	 2.038316	 	 
+test	 23	 motion	 mot_RLLR	 0	 3	 1.849129	 58.660270	 61.509775	 2.851679	 	 
+test	 24	 motion	 mot_LRRL_T	 1	 5	 1.933993	 61.512626	 65.446672	 3.936465	 	 
+test	 25	 static	 static	 0	 1	 1.678735	 65.449098	 68.128248	 2.681057	 	 
+test	 26	 static	 static	 0	 1	 1.757740	 68.130662	 70.888589	 2.759867	 	 
