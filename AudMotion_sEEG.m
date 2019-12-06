@@ -45,7 +45,7 @@ fprintf('Auditory ERPs \n\n')
 
 %% Experiment Parametes
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Init_pause = 0;
+Init_pause = 3;
 freq = 44100;
 
 switch str2num(expLength)
