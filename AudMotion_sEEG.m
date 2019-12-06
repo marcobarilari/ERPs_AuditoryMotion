@@ -120,8 +120,23 @@ isTarget = [0 0 0 1 1 1];
 if strcmp(device,'eeg')
     openparallelport('D010');
 elseif strcmp(device,'trial')
+    
+    
+    
+    
+    
+    
+    % IS the second part of this IF statement necessary?
+    
     % assign number of trails to 15
     %     numEvents = 15;
+    
+    
+    
+    
+    
+    
+    
 end
 
 %% InitializePsychAudio;
@@ -151,7 +166,15 @@ WaitSecs(Init_pause);
 
 %% Loop starts
 
+
+
+% Can this commented out line be removed?
+
 % targetTime   = [];
+
+
+
+
 
 eventOnsets =       zeros(1,numEvents);
 eventEnds =         zeros(1,numEvents);
@@ -183,6 +206,16 @@ for iEvent = 1:numEvents
     % send the trigger
     if strcmp(device,'eeg')
         
+        
+        
+        
+        % There are repeats in both sides of this if / else statement:
+        % low hanging fruit for refactoring
+        
+        
+        
+        
+        
         % >>> consider to add a +10, ask Franci why
         
         % assign trigger to which sound will be played
@@ -196,7 +229,7 @@ for iEvent = 1:numEvents
         sendparallelbyte(0);
         
     else
-        
+     
         % assign trigger to which sound will be played anyway,it will go in
         % the outputfile
         trigger = Event_order(iEvent);
@@ -262,6 +295,12 @@ for iEvent = 1:numEvents
     end
     
     %%%%%%%%%
+    
+    
+    % This thing below is work in progress, no? Seems redundant with the
+    % previous ISI section
+    
+    
     status = PsychPortAudio('GetStatus', pahandle);
     while status.Active==1
         status = PsychPortAudio('GetStatus', pahandle);
