@@ -5,7 +5,8 @@
 % Simplify the ALocaliser fmri experiment for ERPs
 
 % simply run the script and press enter instead of specifying the
-% SubjectName
+% SubjectName & provide run# to be savedin the logfile, and provide the
+% length trials/duration of exp (options: 1-2-3)
 
 % CB 06.12.2019 when esc-delete is pressed there is no logfile output!!!!
 
@@ -131,7 +132,8 @@ end
 
 new_amp = 0.2; % multiply the audio by this value to decrease the volume
 
-% load all the sounds
+% load all the sounds & lower the amplitude of the sounds
+% lower the amp is crucial for the in-ear headphone set!
 for icon = 1:numcondition
     
     chosen_file{icon} = [soundfiles{icon},'.wav'];
@@ -273,7 +275,7 @@ for iEvent = 1:numEvents
                 % played, it sends trigger 7
                 PsychPortAudio('Close', pahandle);
                 
-                % if sEEG (don't do that in the pc)
+                % if sEEG (don't do that in the pc) >>>> CB ?
                 if strcmp(device,'eeg')
                     % Is it possible to not hard code the trigger values in
                     % here and instead have them as variable at the top of
@@ -303,10 +305,10 @@ for iEvent = 1:numEvents
         end
     end
     
+    %calculate timings
     eventEnds(iEvent)=GetSecs-experimentStartTime;
     eventDurations(iEvent)=eventEnds(iEvent)-eventOnsets(iEvent);
       
-    % timeLogger(iEvent).length  = timeLogger(iEvent).endTime - timeLogger(iEvent).startTime;  %Get the total trial duration
     % get the total trial duration
     timeLogger(iEvent).length  = eventDurations(iEvent); 
     % get the time for the block end
@@ -322,7 +324,7 @@ for iEvent = 1:numEvents
         timeLogger(iEvent).startTime, eventEnds(iEvent), eventDurations(iEvent), ...
         responseKey, responseTime);
        
-    % CONSIDER what happens in case of buttonpress>1 time??
+    % CONSIDER what happens in case of buttonpress>1 and/or during the sound??
 end
 
 %% Save the results ('names','onsets','ends','duration') of each block
