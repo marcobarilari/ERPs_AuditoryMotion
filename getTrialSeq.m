@@ -9,12 +9,13 @@ function [trial_seq_names,trial_seq] = getTrialSeq(numEvents,numTargets,expLengt
 % outputs the trial sequence with numbers (trial_seq) or with names (trial_seq_names)
 %
 % number assigned order:
-% 1     static
-% 2     mot_LRRL
-% 3     mot_RLLR
-% 4     Static_T
-% 5     mot_LRRL_T
-% 6     mot_RLLR_T
+
+% 1    rms_static_1s
+% 2    rms_mot_LR_1s
+% 3    rms_mot_RL_1s
+% 4    rms_static_2s
+% 5    rms_mot_LR_2s
+% 6    rms_mot_RL_2s
 
 expLength = str2num(expLength); %#ok<ST2NM>
 
@@ -48,14 +49,16 @@ for i = 1:length(trial_seq)
     trial_seq_names{end+1} = num2str(trial_seq(i)); %#ok<AGROW>
 end
 
-trial_seq_names(strcmpi(trial_seq_names,'1')) = {'static'};
-trial_seq_names(strcmpi(trial_seq_names,'2')) = {'mot_LRRL'};
-trial_seq_names(strcmpi(trial_seq_names,'3')) = {'mot_RLLR'};
-trial_seq_names(strcmpi(trial_seq_names,'4')) = {'static_T'};
-trial_seq_names(strcmpi(trial_seq_names,'5')) = {'mot_LRRL_T'};
-trial_seq_names(strcmpi(trial_seq_names,'6')) = {'mot_RLLR_T'};
+trial_seq_names(strcmpi(trial_seq_names,'1')) = {'rms_static_1s'};
+trial_seq_names(strcmpi(trial_seq_names,'2')) = {'rms_mot_LR_1s'};
+trial_seq_names(strcmpi(trial_seq_names,'3')) = {'rms_mot_RL_1s'};
+trial_seq_names(strcmpi(trial_seq_names,'4')) = {'rms_static_2s'};
+trial_seq_names(strcmpi(trial_seq_names,'5')) = {'rms_mot_LR_2s'};
+trial_seq_names(strcmpi(trial_seq_names,'6')) = {'rms_mot_RL_2s'};
 
 end
+
+  
 
 function trial_seq = pseudorand(numEvents, numTargets, nChunks, expLength)
 
@@ -63,11 +66,11 @@ function trial_seq = pseudorand(numEvents, numTargets, nChunks, expLength)
 % even randomization across experiment per condition
 
 static = (numEvents-numTargets)/2;
-mot_LRRL = (numEvents-numTargets)/4;
-mot_RLLR = (numEvents-numTargets)/4;
+mot_LR = (numEvents-numTargets)/4;
+mot_RL = (numEvents-numTargets)/4;
 static_T = numTargets/2;
-mot_LRRL_T = numTargets/4;
-mot_RLLR_T = numTargets/4;
+mot_LR_T = numTargets/4;
+mot_RL_T = numTargets/4;
 
 % create the three chunks of condition and randomize them and check that:
 % 1 - the target is not in the first trial
@@ -80,8 +83,8 @@ while d < numEvents*nChunks-2
     
     % create a sequence of trials that contains 1 thirs of all the trials
     trial_seq = [ ...
-        repmat(ones,1,static),  repmat(2,1,mot_LRRL),   repmat(3,1,mot_RLLR), ...
-        repmat(4,1,static_T),   repmat(5,1,mot_LRRL_T), repmat(6,1,mot_RLLR_T)];
+        repmat(ones,1,static),  repmat(2,1,mot_LR),   repmat(3,1,mot_RL), ...
+        repmat(4,1,static_T),   repmat(5,1,mot_LR_T), repmat(6,1,mot_RL_T)];
     
     switch expLength
         
