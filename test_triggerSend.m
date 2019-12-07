@@ -3,14 +3,11 @@
 clear all;  %#ok<CLALL>
 clc
 
-device = 'RME_RCAtrig'; % 'trial' 'eeg'
-freq = 44100;
-
 % create a 1 second pure tone to test;
-sound = repmat(sin(1:freq), 2, 1);
+sound = repmat(sin(1:freq)*440, 2, 1);
 
-audio_config.freq = freq; 
-audio_config.sound = sound;
+audio_config.freq = 44100; 
+audio_config.sound = 'RME_RCAtrig'; % 'trial' 'eeg'
 
 
 audio_config = triggerSend('open', device, audio_config);
