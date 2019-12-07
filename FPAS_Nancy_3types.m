@@ -19,6 +19,10 @@ nRep = 2;
 % Folder where the sequences are contained
 seqDir = fullfile('D:', 'Nancy_Battery', '3_AUDITIF','Sequences','AttentionalTarget');
 
+device = 'RME_RCAtrig'; % 'trial' 'eeg'
+
+FS = 44100; % Sampling frequency of the sounds
+
 
 %% Create dir
 % Create a folder for the subject code to save a text file with the order
@@ -30,6 +34,10 @@ if exist((sprintf('SUB%03d_notes',sub)),'dir')==7
 else
     mkdir(sprintf('SUB%03d_notes',sub));
 end
+
+% Create a text file to save order sequence presentation
+txtFname = fullfile(sprintf('sub-%03d_notes', sub), sprintf('sub-%03d_list', sub) );
+fidwrit = fopen(txtFname, 'wt');
 
 
 %% Loading sequences from defined folders
@@ -46,25 +54,28 @@ for st = 1:length(seqType) %sequence type
 end
 
 
-%% Initialize PsychToolbox
-% PsychDefaultSetup(2);
-% OPEN PARALLEL PORT HERE openparallelport_inpout32(hex2dec('d010'))
-openparallelport('D010'); %
-
-InitializePsychSound(1) % 'reallyneedlowlatency' flag set to one to push really hard for low latency.
-numChannel = 2; % Number of channels for audio output  
-FS = 44100; % Sampling frequency of the sounds
-pahandle = PsychPortAudio('Open', [], [], 0, FS, numChannel); 
-
-% Create a text file to save order sequence presentation
-txtFname = sprintf('SUB%03d_notes/SUB%03d_list', sub,sub);
-fidwrit = fopen(txtFname, 'wt');
-
-
-%% Main loop
+%% Initialize
 
 rand('seed',sum(100*clock));
 
+% Make sure no keys are disabled
+DisableKeysForKbCheck([]);
+
+% 'reallyneedlowlatency' flag set to one to push really hard for low latency.
+InitializePsychSound(1) 
+
+% load and add test sound
+audio_config.sound = sound;
+audio_config.freq = FS; 
+
+% open psychport audio
+audio_config = triggerSend('open', device, audio_config);
+
+% Open parallel port if we use eeg for triggers
+triggerSend('open', device, audio_config);
+
+
+%% Main loop
 % Loop over the number of repetition of each sound, so that each sequence type is presented at least one
 for i = 1:nRep 
     
@@ -76,9 +87,6 @@ for i = 1:nRep
         
         % key code to start a sequence: 5
         keyCodeStart = KbName('5%');
-        
-        % Make sure no keys are disabled
-        DisableKeysForKbCheck([]);
 
         abletostart = false;
         keyIsDown = 0;
@@ -90,8 +98,8 @@ for i = 1:nRep
                 if find(keyCode)==keyCodeStart
                     abletostart = true;
                     % break;
-                elseif find(keyCode)== KbName('esc') %% Put escape here
-                    PsychPortAudio('Close', pahandle);
+                elseif find(keyCode)== KbName('DELETE') %% Put escape here
+                    PsychPortAudio('Close');
                     sca
                     return
                 end
@@ -103,17 +111,14 @@ for i = 1:nRep
         fprintf(fidwrit,'%s\n',line);
 
         % Fill the audio playback buffer with audio data, doubled: stereo
-        sToPlay = seq{orderseq(j),i}.audio;
+        sound = seq{orderseq(j),i}.audio;
+        sound = [sound'; sound'];
         
-        % Trigger code for the start of a sequence: sequence type+10 
-        trigCode = seqType(orderseq(j))+10;
-        PsychPortAudio('FillBuffer', pahandle, [sToPlay'; sToPlay']);
-        repetitions = 1;
-        startCue = 0; % Start immediately (0 = immediately)
-        waitForDeviceStart = 1; % Should we wait for the device to really start (1 = yes)  
-        sendparallelbyte(trigCode);
-        tStart = PsychPortAudio('Start', pahandle, repetitions, startCue, waitForDeviceStart);
-        sendparallelbyte(0); % reset parallel port to 0 to avoid
+        audio_config.sound = sound;
+        
+        audio_config = triggerSend('fillBuffer', device, audio_config);
+        
+        audio_config = triggerSend('start', device, audio_config);
         
         % Check if the audio is being played or not
         status = PsychPortAudio('GetStatus', pahandle); 
@@ -124,13 +129,10 @@ for i = 1:nRep
             status = PsychPortAudio('GetStatus', pahandle);
             [keyIsDown, pressedSecs, keyCode] = KbCheck(-1);
             if keyIsDown
-                if find(keyCode)== KbName('esc') %% PUT ESCAPE HERE
+                if find(keyCode)== KbName('DELETE') %% PUT ESCAPE HERE
                     % If the script is stopped while a sequence is being
-                    % played, it sends trigger 6
-                    PsychPortAudio('Close', pahandle);
-                    sendparallelbyte(6)
-                    sca
-                    sendparallelbyte(0)
+                    % played, close psychport audio and send trigger
+                    audio_config = triggerSend('start', device, audio_config);
                     return
                 elseif find(keyCode)== KbName('space')
                     % If space bar is pressed (attention task), trigger 5
@@ -143,11 +145,12 @@ for i = 1:nRep
                 end
             end
         end
-        sendparallelbyte(trigCode+20);
-        sendparallelbyte(0);
+        
+%         sendparallelbyte(trigCode+20);
+%         sendparallelbyte(0);
 
         % At the end of the sequence, end sequence is displayed on the
-        % screen. After 5 seconds the word next appears and it is possible
+        % screen. After 5 seconds the next word appears and it is possible
         % to start a new sequence by pressing 5
         disp('end sequence');
         WaitSecs(5);
