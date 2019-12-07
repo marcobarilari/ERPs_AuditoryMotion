@@ -30,8 +30,8 @@ Init_pause = 3;
 %%
 %% set trial or real experiment
 % device = 'eeg'; % any sound card, triggers through parallel port
-device = 'RME_RCAtrig'; % works with RME sound card and sends one trigger value through RCA cable (trigger box)
-% device = 'trial'; % any sound card, no triggers (parallel port not open)
+% device = 'RME_RCAtrig'; % works with RME sound card and sends one trigger value through RCA cable (trigger box)
+device = 'trial'; % any sound card, no triggers (parallel port not open)
 
 fprintf('Connected Device is %s \n\n',device);
 
@@ -54,6 +54,8 @@ end
 if isempty(Run)
     Run=99;
 end
+
+task_id = 'AudERPs';
 
 fprintf('Auditory ERPs \n\n')
 
@@ -87,24 +89,6 @@ jitter = rand(1,numEvents);
 % a vector of interstimulus intervals for each event
 ISI = 1 + jitter;
 
-DateFormat = 'yyyy_mm_dd_HH_MM';
-
-Filename = fullfile(pwd, 'output', ...
-    ['sub-' SubjName, ...
-    '_run-' Run, ...
-    '_case-n-' expLength, ...
-    '_' datestr(now, DateFormat) '.tsv']);
-
-% prepare for the output
-% ans 7 means that a directory exist
-if exist('output', 'dir') ~= 7
-    mkdir('output');
-end
-
-% open a tsv file to write the output
-fid = fopen(Filename, 'a');
-fprintf(fid, 'SubjID\tExp_trial\tCondition\tSoundfile\tTarget\tTrigger\tISI\tEvent_start\tEvent_end\tEvent_duration\tResponse\tRT\n');
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Experimental Design
 
@@ -133,6 +117,7 @@ condition = {...
     'motion'};
 
 isTarget = [0 0 0 1 1 1];
+
 
 %% Open parallel port
 if strcmp(device,'eeg')
@@ -194,8 +179,10 @@ WaitSecs(Init_pause);
 eventOnsets =       zeros(1,numEvents);
 eventEnds =         zeros(1,numEvents);
 eventDurations =    zeros(1,numEvents);
-responses =         zeros(1,numEvents);
+responses =         {};
 playTime =          zeros(1,numEvents);
+conditions =        {};
+isTargets =         zeros(1,numEvents);
 
 for iEvent = 1:numEvents
     
@@ -203,6 +190,7 @@ for iEvent = 1:numEvents
     responseKey  = [];
     responseTime = [];
     
+    conditions{end+1,1} = condition(Event_order(iEvent));
     
     % get the onset time
     eventOnsets(iEvent)=GetSecs-experimentStartTime;
@@ -240,6 +228,7 @@ for iEvent = 1:numEvents
         
         if keyIsDown
             
+            
             responseKey = KbName(find(keyCode));
             responseTime = secs - experimentStartTime;
             
@@ -266,25 +255,40 @@ for iEvent = 1:numEvents
     eventEnds(iEvent)=GetSecs-experimentStartTime;
     eventDurations(iEvent)=eventEnds(iEvent)-eventOnsets(iEvent);
     
+    
+    if isempty(responseKey)
+        responseKey = 'NA';
+    end
+    responses{end+1} = responseKey;
+    
+    if isempty(responseTime)
+        responseTime = 0;
+    end
+    responsesTime(iEvent) = responseTime;
+    
+    isTargets(iEvent,1) = isTarget(Event_order(iEvent));
+    
     % get the total trial duration
     timeLogger(iEvent).length  = eventDurations(iEvent);
     % get the time for the block end
     timeLogger(iEvent).endTime = eventEnds(iEvent);
-    timeLogger(iEvent).responseTime = responseTime;
-    timeLogger(iEvent).response = responseKey;
+    timeLogger(iEvent).responseTime = responsesTime(iEvent);
+    timeLogger(iEvent).response = responses(iEvent);
     timeLogger(iEvent).isTarget = isTarget(Event_order(iEvent));
     timeLogger(iEvent).soundcode = trigger;
     
-    fprintf(fid,'%s\t %d\t %s\t %s\t %d\t %d\t %f\t %f\t %f\t %f\t %s\t %f\n',...
-        SubjName, iEvent, string(condition(Event_order(iEvent))), string(soundfiles(Event_order(iEvent))), ...
-        isTarget(Event_order(iEvent)), trigger, ISI(iEvent), ...
-        timeLogger(iEvent).startTime, eventEnds(iEvent), eventDurations(iEvent), ...
-        responseKey, responseTime);
+    %     fprintf(fid,'%s\t %d\t %s\t %s\t %d\t %d\t %f\t %f\t %f\t %f\t %s\t %f\n',...
+    %         SubjName, iEvent, string(condition(Event_order(iEvent))), string(soundfiles(Event_order(iEvent))), ...
+    %         isTarget(Event_order(iEvent)), trigger, ISI(iEvent), ...
+    %         timeLogger(iEvent).startTime, eventEnds(iEvent), eventDurations(iEvent), ...
+    %         responseKey, responseTime);
     
     % CONSIDER what happens in case of buttonpress>1
     % CONSIDER adding timeLogger(iEvent).playTime into fprintf (log .tsv
     % file)
 end
+
+
 
 %% Save the results ('names','onsets','ends','duration') of each block
 names     = cell(length(timeLogger),1);
@@ -299,6 +303,23 @@ for i=1:length(timeLogger)
     durations(i,1) = timeLogger(i).length;
 end
 
+condition = conditions';
+Events_order = Event_order';
+target = isTargets';
+isi = ISI';
+eventEnd = eventEnds';
+response = responses';
+responseTime = responsesTime';
+
+[ t, table_header ] = make_events(SubjName, task_id, Run, onsets, durations, condition, ...
+    names, ...
+    target, ...
+    Events_order, ...
+    isi, ...
+    eventEnd, ...
+    response, ...
+    responseTime);
+
 %% Take the total exp time
 % PsychPortAudio('Close',pahandle);
 audio_config = triggerSend('close', device, audio_config);
@@ -311,7 +332,7 @@ save(fullfile(pwd, 'output', ['logFile_', SubjName, '_run-' Run,'_case-n-' expLe
     'names', 'onsets', 'durations', 'ends', 'responseTime', ...
     'responseKey', 'Experiment_duration', 'playTime','timeLogger');
 
-fclose(fid);
+PsychPortAudio('Close');
 
 expTime = toc;
 
@@ -322,5 +343,4 @@ fprintf('\nyou have tested %d trials for STATIC and %d trials for MOTION conditi
     (numEvents-numTargets)/2, (numEvents-numTargets)/2);
 
 fprintf('\nexp. duration was %f minutes\n\n', expTime/60);
-
 
