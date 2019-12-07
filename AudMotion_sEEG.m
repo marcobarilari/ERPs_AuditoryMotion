@@ -30,14 +30,14 @@ Init_pause = 3;
 %%
 %% set trial or real experiment
 % device = 'eeg'; % any sound card, triggers through parallel port
-device = 'RME_RCAtrig'; % works with RME sound card and sends one trigger value through RCA cable (trigger box)
-% device = 'trial'; % any sound card, no triggers (parallel port not open)
+% device = 'RME_RCAtrig'; % works with RME sound card and sends one trigger value through RCA cable (trigger box)
+ device = 'trial'; % any sound card, no triggers (parallel port not open)
 
 fprintf('Connected Device is %s \n\n',device);
 
 %% Start me up
 % get the subject Name
-SubjName = input('\nSubject Name: ','s');
+%SubjName = input('\nSubject Name: ','s');
 Run = input('\nrun n.: ','s');
 
 % here is prompt a multiverse scenario in witch you can choos n. of trials
@@ -48,9 +48,9 @@ fprintf('\n case 3 - 28 trials per condition (Motion & Static) + ~12%% targets (
 
 expLength = input('length of th exp. [1 - 2 - 3]: ','s');
 fprintf('\n')
-if isempty(SubjName)
+%if isempty(SubjName)
     SubjName = 'test';
-end
+%end
 if isempty(Run)
     Run=99;
 end
@@ -164,25 +164,14 @@ audio_config.sound =  SoundData{1}; % test sound
 audio_config = triggerSend('open', device, audio_config);
 
 
-fprintf('starting experiment... \n');
-
 %% Experiment Start
+% 
+% 
+% Wait for the "SPACE" key with KbCheck in the subfuction.
+pressSpace4me();
 
 % get time point at the beginning of the experiment (machine time)
 experimentStartTime = GetSecs();
-
-
-
-
-
-
-
-% KbWait to start
-
-
-
-
-
 
 %initial pause
 WaitSecs(Init_pause);
@@ -256,7 +245,17 @@ for iEvent = 1:numEvents
             else
                 % this part is only relevant for trigger send to EEG the
                 % usual way and not via the sound card
-                [audio_config] = triggerSend('abort', device, audio_config);
+                
+                
+                
+                
+                
+                %[audio_config] = triggerSend('abort', device, audio_config);
+                
+                
+                
+                
+                
             end
             
         end

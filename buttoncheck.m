@@ -21,7 +21,6 @@ while 1
         %pressed response key
         responseKey = KbName(min(find(firstPress)));
         responseTime = timeSecs - startSecs;
-        %fprintf('"%s" typed at time %.3f seconds\n', KbName(min(find(firstPress))), timeSecs - startSecs);
         
         if firstPress(escapeKey)
             break;
