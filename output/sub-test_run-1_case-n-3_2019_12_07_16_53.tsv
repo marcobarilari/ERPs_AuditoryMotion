@@ -1,4 +1,0 @@
-SubjID	Exp_trial	Condition	Soundfile	Target	Trigger	ISI	Event_start	Event_end	Event_duration	Response	RT
-test	 1	 motion	 rms_mot_RL_1s	 0	 3	 1.091699	 3.028377	 5.120920	 2.115576	 	 
-test	 2	 static	 rms_static_1s	 0	 1	 1.250583	 5.132686	 7.384107	 2.257923	 	 
-test	 3	 motion	 rms_mot_LR_1s	 0	 2	 1.593771	 7.392268	 9.986910	 2.600444	 	 
