@@ -265,7 +265,7 @@ for iEvent = 1:numEvents
     end
     responsesTime(iEvent) = responseTime;
     
-    isTargets(iEvent,1) = isTarget(Event_order(iEvent));
+    isTargets(iEvent) = isTarget(Event_order(iEvent));
     
     % get the total trial duration
     timeLogger(iEvent).length  = eventDurations(iEvent);
@@ -304,13 +304,13 @@ end
 
 condition = conditions';
 Events_order = Event_order';
-target = isTargets';
+target = isTargets;
 isi = ISI';
 eventEnd = eventEnds';
 response = responses';
 responseTime = responsesTime';
 
-[ t, table_header ] = make_events(SubjName, task_id, Run, onsets, durations, condition, ...
+[ t, table_header ] = make_events(SubjName, task_id, Run, onsets, durations, conditions, ...
     names, ...
     target, ...
     Events_order, ...
