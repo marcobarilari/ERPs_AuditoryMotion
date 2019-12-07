@@ -29,12 +29,15 @@ Init_pause = 3;
 
 %%
 %% set trial or real experiment
+
+
 % device = 'eeg'; % any sound card, triggers through parallel port
 % device = 'RME_RCAtrig'; % works with RME sound card and sends one trigger value through RCA cable (trigger box)
 device = 'trial'; % any sound card, no triggers (parallel port not open)
 
-fprintf('Connected Device is %s \n\n',device);
 
+
+fprintf('Connected Device is %s \n\n',device);
 %% Start me up
 % get the subject Name
 %SubjName = input('\nSubject Name: ','s');
@@ -122,9 +125,8 @@ isTarget = [0 0 0 1 1 1];
 %% Open parallel port
 if strcmp(device,'eeg')
     openparallelport('D010');
-elseif any(strcmp(device,{'trial','RME_RCAtrig'}))
-    % assign number of trails to 15
-    %     numEvents = 15;
+%elseif any(strcmp(device,{'trial','RME_RCAtrig'}))
+
 end
 
 %% InitializePsychAudio;
@@ -162,8 +164,6 @@ experimentStartTime = GetSecs();
 WaitSecs(Init_pause);
 
 %% Loop starts
-
-% targetTime   = [];
 
 eventOnsets =       zeros(1,numEvents);
 eventEnds =         zeros(1,numEvents);
@@ -276,15 +276,13 @@ for iEvent = 1:numEvents
     timeLogger(iEvent).isTarget = isTarget(Event_order(iEvent));
     timeLogger(iEvent).soundcode = trigger;
     
-    %     fprintf(fid,'%s\t %d\t %s\t %s\t %d\t %d\t %f\t %f\t %f\t %f\t %s\t %f\n',...
-    %         SubjName, iEvent, string(condition(Event_order(iEvent))), string(soundfiles(Event_order(iEvent))), ...
-    %         isTarget(Event_order(iEvent)), trigger, ISI(iEvent), ...
-    %         timeLogger(iEvent).startTime, eventEnds(iEvent), eventDurations(iEvent), ...
-    %         responseKey, responseTime);
+    fprintf(fid,'%s\t %d\t %s\t %s\t %d\t %d\t %f\t %f\t %f\t %f\t %s\t %f\n',...
+        SubjName, iEvent, string(condition(Event_order(iEvent))), string(soundfiles(Event_order(iEvent))), ...
+        isTarget(Event_order(iEvent)), trigger, ISI(iEvent), ...
+        timeLogger(iEvent).startTime, eventEnds(iEvent), eventDurations(iEvent), ...
+        responseKey, responseTime);
     
-    % CONSIDER what happens in case of buttonpress>1
-    % CONSIDER adding timeLogger(iEvent).playTime into fprintf (log .tsv
-    % file)
+
 end
 
 
