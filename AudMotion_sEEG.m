@@ -180,8 +180,8 @@ isTargets =         zeros(1,numEvents);
 for iEvent = 1:numEvents
     
     startEvent = GetSecs();
-    responseKey  = [];
-    responseTime = [];
+    responseKey  = 'NA';
+    responseTime = 0;
     
     conditions{end+1,1} = condition(Event_order(iEvent));
     
@@ -258,20 +258,12 @@ for iEvent = 1:numEvents
     eventEnds(iEvent)=GetSecs-experimentStartTime;
     eventDurations(iEvent)=eventEnds(iEvent)-eventOnsets(iEvent);
     
-    
-    if isempty(responseKey)
-        responseKey = 'NA';
-    end
+    % log response and time
     responses{end+1} = responseKey;
-    
-    if isempty(responseTime)
-        responseTime = 0;
-    end
     responsesTime(iEvent) = responseTime;
-    
     isTargets(iEvent) = isTarget(Event_order(iEvent));
     
-    % get the total trial duration
+    % get the total trial duration and all for structure
     timeLogger(iEvent).length  = eventDurations(iEvent);
     % get the time for the block end
     timeLogger(iEvent).endTime = eventEnds(iEvent);
@@ -280,6 +272,7 @@ for iEvent = 1:numEvents
     timeLogger(iEvent).isTarget = isTarget(Event_order(iEvent));
     timeLogger(iEvent).soundcode = trigger;
     
+    %logfile incase the script stopped
     fprintf(fid,'%s\t %d\t %s\t %s\t %d\t %d\t %f\t %f\t %f\t %f\t %s\t %f\n',...
         SubjName, iEvent, string(condition(Event_order(iEvent))), string(soundfiles(Event_order(iEvent))), ...
         isTarget(Event_order(iEvent)), trigger, ISI(iEvent), ...
@@ -306,7 +299,7 @@ end
 
 condition = conditions';
 Events_order = Event_order';
-target = isTargets;
+target = isTargets';
 isi = ISI';
 eventEnd = eventEnds';
 response = responses';
@@ -321,9 +314,10 @@ responseTime = responsesTime';
     response, ...
     responseTime);
 
-%% Take the total exp time
-% PsychPortAudio('Close',pahandle);
+%% Close the port
 audio_config = triggerSend('close', device, audio_config);
+
+% Take the total exp time to printout 
 Experiment_duration = GetSecs - experimentStartTime;
 
 %% Save a mat Log file
@@ -333,11 +327,13 @@ save(fullfile(pwd, 'output', ['logFile_', SubjName, '_run-' Run,'_case-n-' expLe
     'names', 'onsets', 'durations', 'ends', 'responseTime', ...
     'responseKey', 'Experiment_duration', 'playTime','timeLogger');
 
+%close the logfile
+fclose(fid);
 
-PsychPortAudio('Close');
-
+%take the last time
 expTime = toc;
 
+%% print the duration of the exp
 fprintf('\nSequence IS OVER!!\n');
 fprintf('\n==================\n\n');
 
