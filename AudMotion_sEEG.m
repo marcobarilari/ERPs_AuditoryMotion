@@ -105,12 +105,12 @@ fprintf(fid, 'SubjID\tExp_trial\tCondition\tSoundfile\tTarget\tTrigger\tISI\tEve
 numEvents = length(Event_order); 
 
 soundfiles = {...
-    'static',...
-    'mot_LRRL',...
-    'mot_RLLR',...
-    'static_T',...
-    'mot_LRRL_T',...
-    'mot_RLLR_T'}; 
+    'rms_static_1s',...
+    'rms_mot_LR_1s',...
+    'rms_mot_RL_1s',...
+    'rms_static_2s',...
+    'rms_mot_LR_2s',...
+    'rms_mot_RL_2s'}; 
 
 numcondition = length(soundfiles);
 
@@ -261,6 +261,8 @@ for iEvent = 1:numEvents
     % log the start time of the sound
     timeLogger(iEvent).startTime = playTime(1,iEvent) - experimentStartTime; %#ok<*SAGROW>
     
+    % log the exact playtime of the sound
+    timeLogger(iEvent).playTime = GetSecs - playTime(1,iEvent);
     
     % wait for the ISI and register the responseKey
     while (GetSecs-(playTime(1,iEvent)+(length(Sound)/freq))) <= (ISI(iEvent))
@@ -320,7 +322,7 @@ for iEvent = 1:numEvents
     timeLogger(iEvent).responseTime = responseTime;
     timeLogger(iEvent).response = responseKey;
     timeLogger(iEvent).isTarget = isTarget(Event_order(iEvent));
-    timeLogger(iEvent).whichtrigger = trigger;                               
+    timeLogger(iEvent).soundcode = trigger;                               
     
     fprintf(fid,'%s\t %d\t %s\t %s\t %d\t %d\t %f\t %f\t %f\t %f\t %s\t %f\n',...
         SubjName, iEvent, string(condition(Event_order(iEvent))), string(soundfiles(Event_order(iEvent))), ...
@@ -328,7 +330,9 @@ for iEvent = 1:numEvents
         timeLogger(iEvent).startTime, eventEnds(iEvent), eventDurations(iEvent), ...
         responseKey, responseTime);
        
-    % CONSIDER what happens in case of buttonpress>1 and/or during the sound??
+    % CONSIDER what happens in case of buttonpress>1
+    % CONSIDER adding timeLogger(iEvent).playTime into fprintf (log .tsv
+    % file)
 end
 
 %% Save the results ('names','onsets','ends','duration') of each block
@@ -353,7 +357,7 @@ Experiment_duration = GetSecs - experimentStartTime;
 save(fullfile(pwd, 'output', ['logFileFull_', SubjName, '_run-' Run,'_case-n-' expLength,'.mat']));
 save(fullfile(pwd, 'output', ['logFile_', SubjName, '_run-' Run,'_case-n-' expLength,'.mat']), ...
     'names', 'onsets', 'durations', 'ends', 'responseTime', ...
-    'responseKey', 'Experiment_duration', 'playTime');
+    'responseKey', 'Experiment_duration', 'playTime','timeLogger');
 
 fclose(fid);
 
