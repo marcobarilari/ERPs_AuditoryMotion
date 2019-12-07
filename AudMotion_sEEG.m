@@ -191,7 +191,7 @@ for iEvent = 1:numEvents
     responseKey  = [];
     responseTime = [];
     
-    conditions{end+1} = condition(Event_order(iEvent));
+    conditions{end+1,1} = condition(Event_order(iEvent));
     
     % get the onset time
     eventOnsets(iEvent)=GetSecs-experimentStartTime;
@@ -319,7 +319,7 @@ for iEvent = 1:numEvents
     end
     responsesTime(iEvent) = responseTime;
     
-    isTargets(iEvent) = isTarget(Event_order(iEvent));
+    isTargets(iEvent,1) = isTarget(Event_order(iEvent));
     
     % get the total trial duration
     timeLogger(iEvent).length  = eventDurations(iEvent);
@@ -356,14 +356,22 @@ for i=1:length(timeLogger)
     durations(i,1) = timeLogger(i).length;
 end
 
-[ t, table_header ] = make_events(SubjName, task_id, Run, onsets, durations, conditions', ...
+condition = conditions';
+Events_order = Event_order';
+target = isTargets';
+isi = ISI';
+eventEnd = eventEnds';
+response = responses';
+responseTime = responsesTime';
+
+[ t, table_header ] = make_events(SubjName, task_id, Run, onsets, durations, condition, ...
     names, ...
-    isTarget', ...
-    Event_order', ...
-    ISI', ...
-    eventEnds', ...
-    responses', ...
-    responsesTime');
+    target, ...
+    Events_order, ...
+    isi, ...
+    eventEnd, ...
+    response, ...
+    responseTime);
 
 %% Take the total exp time
 PsychPortAudio('Close',pahandle);
