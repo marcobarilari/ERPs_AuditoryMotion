@@ -30,9 +30,6 @@ function [audio_config] = triggerSend(action, device, audio_config)
 
 
 %% Parameters
-% set the volume at which to play the trigger so it can actualy be detected
-volume = 0.01;
-
 % number of audio channel used
 dev_n_channels = 4;
 
@@ -96,11 +93,10 @@ switch action
             
             
             % then we set the volume on that channel
-            sound_vol = PTB_volGUI_RME(...
+            audio_config.sound_vol = PTB_volGUI_RME(...
                 'pahandle', pahandle,...
                 'sound', sound,...
-                'nchan', dev_n_channels,...
-                'volume', volume);
+                'nchan', dev_n_channels);
             
             audio_config.pahandle = pahandle;
             audio_config.dev_n_channels = dev_n_channels;
@@ -162,28 +158,28 @@ switch action
         
         % WORK IN PROGRESS
         
-%         pahandle = audio_config.pahandle;
-%         
-%         PsychPortAudio('Close', pahandle);
-%         
-%         if strcmp(device,'eeg')
-%             % send the abort trigger
-%             sendparallelbyte(trigger.abort)
-%             % reset the parallel port
-%             sendparallelbyte(0)
-%         end
+        pahandle = audio_config.pahandle;
+        
+        PsychPortAudio('Close', pahandle);
+        
+        if strcmp(device,'eeg')
+            % send the abort trigger
+            sendparallelbyte(trigger.abort)
+            % reset the parallel port
+            sendparallelbyte(0)
+        end
         
     case 'resp' 
         
         % WORK IN PROGRESS
         
-%         if strcmp(device,'eeg')
-%             % send the response trigger
-%             sendparallelbyte(trigger.resp);
-%             WaitSecs(trigger_delay);
-%             % reset the parallel port
-%             sendparallelbyte(0)
-%         end
+        if strcmp(device,'eeg')
+            % send the response trigger
+            sendparallelbyte(trigger.resp);
+            WaitSecs(trigger_delay);
+            % reset the parallel port
+            sendparallelbyte(0)
+        end
 
     case 'close'
         
