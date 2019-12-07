@@ -55,6 +55,8 @@ if isempty(Run)
     Run=99;
 end
 
+task_id = 'AudERPs';
+
 fprintf('Auditory ERPs \n\n')
 
 %% Experiment Parametes
@@ -84,24 +86,6 @@ jitter = rand(1,numEvents);
 
 % a vector of interstimulus intervals for each event
 ISI = 1 + jitter;   
-
-DateFormat = 'yyyy_mm_dd_HH_MM';
-
-Filename = fullfile(pwd, 'output', ...
-    ['sub-' SubjName, ...
-    '_run-' Run, ...
-    '_case-n-' expLength, ...
-    '_' datestr(now, DateFormat) '.tsv']);
-
-% prepare for the output
-% ans 7 means that a directory exist
-if exist('output', 'dir') ~= 7 
-    mkdir('output');
-end
-
-% open a tsv file to write the output
-fid = fopen(Filename, 'a');
-fprintf(fid, 'SubjID\tExp_trial\tCondition\tSoundfile\tTarget\tTrigger\tISI\tEvent_start\tEvent_end\tEvent_duration\tResponse\tRT\n');  
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Experimental Design
@@ -198,7 +182,7 @@ eventDurations =    zeros(1,numEvents);
 responses =         zeros(1,numEvents);
 playTime =          zeros(1,numEvents);
 
-for iEvent = 1:numEvents
+for iEvent = 1:5 %numEvents
     
     startEvent = GetSecs();
     responseKey  = [];
@@ -329,11 +313,11 @@ for iEvent = 1:numEvents
     timeLogger(iEvent).isTarget = isTarget(Event_order(iEvent));
     timeLogger(iEvent).soundcode = trigger;                               
     
-    fprintf(fid,'%s\t %d\t %s\t %s\t %d\t %d\t %f\t %f\t %f\t %f\t %s\t %f\n',...
-        SubjName, iEvent, string(condition(Event_order(iEvent))), string(soundfiles(Event_order(iEvent))), ...
-        isTarget(Event_order(iEvent)), trigger, ISI(iEvent), ...
-        timeLogger(iEvent).startTime, eventEnds(iEvent), eventDurations(iEvent), ...
-        responseKey, responseTime);
+%     fprintf(fid,'%s\t %d\t %s\t %s\t %d\t %d\t %f\t %f\t %f\t %f\t %s\t %f\n',...
+%         SubjName, iEvent, string(condition(Event_order(iEvent))), string(soundfiles(Event_order(iEvent))), ...
+%         isTarget(Event_order(iEvent)), trigger, ISI(iEvent), ...
+%         timeLogger(iEvent).startTime, eventEnds(iEvent), eventDurations(iEvent), ...
+%         responseKey, responseTime);
        
     % CONSIDER what happens in case of buttonpress>1
     % CONSIDER adding timeLogger(iEvent).playTime into fprintf (log .tsv
@@ -352,6 +336,15 @@ for i=1:length(timeLogger)
     ends(i,1)      = timeLogger(i).endTime;
     durations(i,1) = timeLogger(i).length;
 end
+
+[ t, table_header ] = make_events(SubjName, task_id, Run, timeLogger.startTime, timeLogger.length, timeLogger.condition, ...
+    timeLogger.names, ...
+    timeLogger.isTarget, ...
+    timeLogger.soundcode, ...
+    timeLogger.ISI, ...
+    timeLogger.endTime, ...
+    timeLogger.response, ...
+    timeLogger.responseTime);
 
 %% Take the total exp time
 PsychPortAudio('Close',pahandle);
