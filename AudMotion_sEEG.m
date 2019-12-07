@@ -51,6 +51,9 @@ fprintf('\n case 3 - 28 trials per condition (Motion & Static) + ~12%% targets (
 
 expLength = input('length of th exp. [1 - 2 - 3]: ','s');
 fprintf('\n')
+
+
+%% Create log output(s)
 %if isempty(SubjName)
     SubjName = 'test';
 %end
@@ -58,9 +61,24 @@ if isempty(Run)
     Run=99;
 end
 
+%log filename for .tsv file function
 task_id = 'AudERPs';
 
-% open a tsv file to write the output
+%logfile name for .tsv (for this script only)
+DateFormat = 'yyyy_mm_dd_HH_MM';
+Filename = fullfile(pwd, 'output', ...
+    ['sub-' SubjName, ...
+    '_run-' Run, ...
+    '_case-n-' expLength, ...
+    '_' datestr(now, DateFormat) '.tsv']);
+
+% prepare for the output
+% ans 7 means that a directory exist
+if exist('output', 'dir') ~= 7
+    mkdir('output');
+end
+
+% open a tsv file to write the output (for this script only)
 fid = fopen(Filename, 'a');
 fprintf(fid, 'SubjID\tExp_trial\tCondition\tSoundfile\tTarget\tTrigger\tISI\tEvent_start\tEvent_end\tEvent_duration\tResponse\tRT\n');
 
