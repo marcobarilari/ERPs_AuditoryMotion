@@ -1,10 +1,26 @@
 %% FPAS_Nancy
 % Fast auditory periodic stimulation, Francesca M Barbero 08/10/2019
-% clc
-% clear all
+clc
+clear
+PsychPortAudio('Close');
+
+
 %% Parameters
 sub = 2; % subject code 
 
+% Sequences types to be played: 1-standard, 2-scrambled, 6-harmonic
+seqType = [1 2 6]; 
+
+codeSeq = {'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L'};
+
+% Number of repetition for each sequence type
+nRep = 2; 
+
+% Folder where the sequences are contained
+seqDir = fullfile('D:', 'Nancy_Battery', '3_AUDITIF','Sequences','AttentionalTarget');
+
+
+%% Create dir
 % Create a folder for the subject code to save a text file with the order
 % of the sequences presented. If the folder of the subject code already
 % exists, it stops the script
@@ -15,24 +31,17 @@ else
     mkdir(sprintf('SUB%03d_notes',sub));
 end
 
-codeSeq = {'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L'};
-% Sequences types to be played: 1-standard, 2-scrambled, 6-harmonic
-seqType = [1 2 6]; 
-rand('seed',sum(100*clock));
-% Number of repetition for each sequence type
-nRep = 2; 
-% Folder where the sequences are contained
-seqDir = 'D:\Nancy_Battery\3_AUDITIF\Sequences\AttentionalTarget';
 
 %% Loading sequences from defined folders
 for st = 1:length(seqType) %sequence type
     for cs = 1: nRep
         tyFo = sprintf('Type%d',seqType(st)); % type folder
         suFo = sprintf('SUB%03d',sub); % subject folder
-        noFi = sprintf('Type%d_SUB%03d_%s.wav',seqType(st),sub,codeSeq{cs}); % name of individual sequence
+        noFi = sprintf('Type%d_SUB%03d_%s.wav', seqType(st), sub,codeSeq{cs} ); % name of individual sequence
+        
         % save a structure called seq{seqType,codeSeq} 
-        seq{st,cs}.name = noFi;
-        [seq{st,cs}.audio,seq{st,cs}.FS] = audioread(fullfile(seqDir,tyFo,suFo,noFi));
+        seq{st,cs}.name = noFi; %#ok<*SAGROW>
+        [seq{st,cs}.audio, seq{st,cs}.FS] = audioread(fullfile(seqDir,tyFo,suFo,noFi));
     end
 end
 
@@ -51,6 +60,11 @@ pahandle = PsychPortAudio('Open', [], [], 0, FS, numChannel);
 txtFname = sprintf('SUB%03d_notes/SUB%03d_list', sub,sub);
 fidwrit = fopen(txtFname, 'wt');
 
+
+%% Main loop
+
+rand('seed',sum(100*clock));
+
 % Loop over the number of repetition of each sound, so that each sequence type is presented at least one
 for i = 1:nRep 
     
@@ -62,11 +76,13 @@ for i = 1:nRep
         
         % key code to start a sequence: 5
         keyCodeStart = KbName('5%');
+        
         % Make sure no keys are disabled
         DisableKeysForKbCheck([]);
 
         abletostart = false;
         keyIsDown = 0;
+        
         % Wait for trigger
         while ~abletostart 
             [keyIsDown, pressedSecs, keyCode] = KbCheck(-1);
@@ -88,6 +104,7 @@ for i = 1:nRep
 
         % Fill the audio playback buffer with audio data, doubled: stereo
         sToPlay = seq{orderseq(j),i}.audio;
+        
         % Trigger code for the start of a sequence: sequence type+10 
         trigCode = seqType(orderseq(j))+10;
         PsychPortAudio('FillBuffer', pahandle, [sToPlay'; sToPlay']);
@@ -97,13 +114,13 @@ for i = 1:nRep
         sendparallelbyte(trigCode);
         tStart = PsychPortAudio('Start', pahandle, repetitions, startCue, waitForDeviceStart);
         sendparallelbyte(0); % reset parallel port to 0 to avoid
-        % overwriting of triggers
+        
         % Check if the audio is being played or not
         status = PsychPortAudio('GetStatus', pahandle); 
         % While the audio is being played, check keyboard for attentional
         % task (space bar) or for stopping the script (tab)%%%%%%%%%%%%%%
         % change to escape
-        while status.Active==1;
+        while status.Active==1
             status = PsychPortAudio('GetStatus', pahandle);
             [keyIsDown, pressedSecs, keyCode] = KbCheck(-1);
             if keyIsDown
@@ -136,10 +153,12 @@ for i = 1:nRep
         WaitSecs(5);
         % sendparallelbyte(0);
         disp('next');
+        
     end
 end
 
 fclose(fidwrit);
+
 %% At the end of the experiment:
-PsychPortAudio('Close', pahandle);
+PsychPortAudio('Close');
 sca
