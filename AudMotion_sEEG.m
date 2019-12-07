@@ -8,7 +8,6 @@
 % SubjectName & provide run# to be savedin the logfile, and provide the
 % length trials/duration of exp (options: 1-2-3)
 
-% CB 06.12.2019 when esc-delete is pressed there is no logfile output!!!!
 
 % NOTES:
 % when the response is given while the sound is played, it can be
@@ -19,6 +18,16 @@ clc
 
 tic
 
+%% CHANGE ME IF IT'S NEEDED
+
+%adjust the amp according to the participant
+% multiply the audio by this value to decrease the volume
+new_amp = 0.2; 
+
+%after everything is ready, wait a bit to initiate sound playing loop
+Init_pause = 3;
+
+%%
 %% set trial or real experiment
 % device = 'eeg'; % any sound card, triggers through parallel port
 % device = 'RME_RCAtrig'; % works with RME sound card and sends one trigger value through RCA cable (trigger box) 
@@ -50,7 +59,6 @@ fprintf('Auditory ERPs \n\n')
 
 %% Experiment Parametes
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Init_pause = 3;
 freq = 44100;
 
 switch str2num(expLength)
@@ -134,8 +142,6 @@ end
 
 %% InitializePsychAudio;
 
-new_amp = 0.2; % multiply the audio by this value to decrease the volume
-
 % load all the sounds & lower the amplitude of the sounds
 % lower the amp is crucial for the in-ear headphone set!
 for icon = 1:numcondition
@@ -179,6 +185,7 @@ fprintf('starting experiment... \n');
 % get time point at the beginning of the experiment (machine time)
 experimentStartTime = GetSecs();
 
+%initial pause
 WaitSecs(Init_pause);
 
 %% Loop starts
@@ -260,9 +267,7 @@ for iEvent = 1:numEvents
     
     % log the start time of the sound
     timeLogger(iEvent).startTime = playTime(1,iEvent) - experimentStartTime; %#ok<*SAGROW>
-    
-    % log the exact playtime of the sound
-    timeLogger(iEvent).playTime = GetSecs - playTime(1,iEvent);
+
     
     % wait for the ISI and register the responseKey
     while (GetSecs-(playTime(1,iEvent)+(length(Sound)/freq))) <= (ISI(iEvent))
