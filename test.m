@@ -1,27 +1,24 @@
-function test(varargin)
-
-% list = varargin;
-
-celldisp(varargin)
-
-d=sum(varargin{:});
-
-disp(d)
-
-end
-
-nm = timeLogger(:).names
-
-struct2cell(timeLogger(:).names)
-
-t = table(struct2array(timeLogger.names),struct2cell(timeLogger.isTarget));
+% function test(varargin)
+% 
+% % list = varargin;
+% 
+% celldisp(varargin)
+% 
+% d=sum(varargin{:});
+% 
+% disp(d)
+% 
+% end
 
 
-,timeLogger.isTarget, ...
-    timeLogger.soundcode, ...
-    timeLogger.ISI, ...
-    timeLogger.endTime, ...
-    timeLogger.response, ...
-    timeLogger.responseTime););
+[t, table_header] = make_events(SubjName, task_id, Run, onsets, durations, conditions', ...
+    names, ...
+    isTargets', ...
+    Event_order', ...
+    ISI', ...
+    eventEnds', ...
+    responses', ...
+    responsesTime');
 
 
+% t = table(onsets, durations, conditions');
