@@ -160,23 +160,7 @@ end
 InitializePsychSound(1);
 
 % open audio port
-% if any(strcmp(device,{'trial','eeg'}))
-%    pahandle = PsychPortAudio('Open',[],[],1,freq,2);
-% elseif any(strcmp(device,{'RME_RCAtrig'}))
-%     audio_devices = PsychPortAudio('GetDevices');
-%     dev_idx = find(~cellfun(@isempty, regexpi({audio_devices.DeviceName},'Fireface UC Mac')));
-%     devID = audio_devices(dev_idx).DeviceIndex;
-% %     dev_n_channels = audio_devices(dev_idx).NrOutputChannels;
-%     dev_n_channels = 4;
-%     pahandle = PsychPortAudio('Open', devID, [], 3, freq, dev_n_channels);% pahandle =
-%PsychPortAudio('Open' [, deviceid][, mode][, reqlatencyclass][, freq][, channels] ...
-%[, buffersize][, suggestedLatency][, selectchannels][, specialFlags=0]);
-%     addpath(genpath('lib'));
-%     sound_vol = PTB_volGUI_RME('pahandle',pahandle,'sound',SoundData{1},'nchan',dev_n_channels,'volume',0.01);
-%
-% end
-
-audio_config.sound =  SoundData{1}; %
+audio_config.sound =  SoundData{1}; % test sound
 audio_config = triggerSend('open', device, audio_config);
 
 
@@ -233,55 +217,18 @@ for iEvent = 1:numEvents
     Sound = SoundData{Event_order(iEvent)};
     
     
-    
-    
     % fill the buffer
-    %     if any(strcmp(device,{'trial','eeg'}))
-    %         PsychPortAudio('FillBuffer',pahandle,Sound);
-    %     elseif any(strcmp(device,{'RME_RCAtrig'}))
-    %
-    %         trig_pulse = zeros(1, length(Sound));
-    %         trig_pulse(1:round(0.100*freq)) = 1;
-    %         s_out = zeros(dev_n_channels, length(Sound));
-    %         s_out(1,:) = Sound(1,:); % left earphone
-    %         s_out(2,:) = Sound(2,:); % right earphone
-    %         s_out(3,:) = trig_pulse; % trigger pulse
-    %
-    %         PsychPortAudio('FillBuffer',pahandle, s_out);
-    %     end
-    
     audio_config.sound =  Sound;
     audio_config = triggerSend('fillBuffer', device, audio_config);
     
     
-    % send the trigger
-    %     if strcmp(device,'eeg')
-    %
-    %         % >>> consider to add a +10, ask Franci why
-    %
-    %         % assign trigger to which sound will be played
-    %         trigger = Event_order(iEvent);
-    %
-    %         % play the sound
-    %         playTime(1,iEvent) = PsychPortAudio('Start', pahandle, [],[], 1);
-    %
-    %         % send the trigger
-    %         sendparallelbyte(trigger);
-    %         % wait for 100 ms
-    %         WaitSecs(0.100);
-    %         %reset the parallel port
-    %         sendparallelbyte(0);
-    %
-    %     else
-    %         % assign trigger to which sound will be played anyway,it will go in
-    %         % the outputfile
-    %         trigger = Event_order(iEvent);
-    %         %Play the sound
-    %         playTime(1,iEvent) = PsychPortAudio('Start', pahandle, [],[],1);
-    %     end
+    % start sound and send the trigger
     trigger = Event_order(iEvent);
+    
     audio_config = triggerSend('start', device, audio_config);
+    
     playTime(1,iEvent) = audio_config.playTime ;
+    
     % log the start time of the sound
     timeLogger(iEvent).startTime = playTime(1,iEvent) - experimentStartTime; %#ok<*SAGROW>
     
@@ -299,26 +246,9 @@ for iEvent = 1:numEvents
             % ecs key press - stop playing the sounds//script
             if strcmp(responseKey,'DELETE')==1
                 
-                %                 % If the script is stopped while a sequence is being
-                %                 % played, it sends trigger 7
-                %                 PsychPortAudio('Close', pahandle);
-                %
-                %                 % if sEEG (don't do that in the pc) >>>> CB ?
-                %                 if strcmp(device,'eeg')
-                %                     % Is it possible to not hard code the trigger values in
-                %                     % here and instead have them as variable at the top of
-                %                     % the script --> this will help Francesca for analysis
-                %                     % and future us if we want to change those values
-                %                     % quickly
-                %                     % Ideally we should also know what each trigger means
-                %                     % and not have to go and look into getSeqTrials to
-                %                     % figure it out.
-                %
-                %                     % triggers code for escape is 7
-                %                     sendparallelbyte(7)
-                %                     sendparallelbyte(0)
-                %                 end
-                
+                % If the script is stopped while a sequence is being
+                % played, it close psychport audio and sends trigger a
+                % trigger if connected to EEG trigger
                 audio_config = triggerSend('abort', device, audio_config);
                 
                 return
@@ -326,12 +256,6 @@ for iEvent = 1:numEvents
             else
                 % this part is only relevant for trigger send to EEG the
                 % usual way and not via the sound card
-                %                 if strcmp(device,'eeg')
-                %                     % trigger code for any keypress is 20
-                %                     sendparallelbyte(20);
-                %                     WaitSecs(0.100);
-                %                     sendparallelbyte(0)
-                %                 end
                 [audio_config] = triggerSend('abort', device, audio_config);
             end
             
