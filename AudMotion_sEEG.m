@@ -60,6 +60,10 @@ end
 
 task_id = 'AudERPs';
 
+% open a tsv file to write the output
+fid = fopen(Filename, 'a');
+fprintf(fid, 'SubjID\tExp_trial\tCondition\tSoundfile\tTarget\tTrigger\tISI\tEvent_start\tEvent_end\tEvent_duration\tResponse\tRT\n');
+
 fprintf('Auditory ERPs \n\n')
 
 %% Experiment Parametes
@@ -328,6 +332,7 @@ save(fullfile(pwd, 'output', ['logFileFull_', SubjName, '_run-' Run,'_case-n-' e
 save(fullfile(pwd, 'output', ['logFile_', SubjName, '_run-' Run,'_case-n-' expLength,'.mat']), ...
     'names', 'onsets', 'durations', 'ends', 'responseTime', ...
     'responseKey', 'Experiment_duration', 'playTime','timeLogger');
+
 
 PsychPortAudio('Close');
 
