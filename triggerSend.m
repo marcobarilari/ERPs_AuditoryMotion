@@ -50,7 +50,7 @@ freq = audio_config.freq;
 sound = audio_config.sound; 
 
 % NEED TO CHECK INPUTS
-% dimension of sound??
+% dimension of sound?? (2,snd_length)
 
 
 
@@ -60,6 +60,10 @@ switch action
         
         
         if any(strcmp(device,{'trial','eeg'}))
+            
+%             if strcmp(device,'eeg')
+%                 openparallelport('D010');
+%             end
             
             dev_n_channels = [];
             
@@ -139,18 +143,20 @@ switch action
         
         % WORK IN PROGRESS
         
-%         pahandle = audio_config.pahandle;
-%         
-%         playTime(1,iEvent) = PsychPortAudio('Start', pahandle, [],[], 1);
-%         
-%         if any(strcmp(device,{'eeg'}))
-%             % send the trigger 
-%             sendparallelbyte(trigger.start);
-%             % wait before resetting trigger
-%             WaitSecs(trigger_delay); 
-%             %reset the parallel port
-%             sendparallelbyte(0);
-%         end
+        pahandle = audio_config.pahandle;
+        
+        playTime = PsychPortAudio('Start', pahandle, [],[], 1);
+        
+        if any(strcmp(device,{'eeg'}))
+            % send the trigger 
+            sendparallelbyte(trigger.start);
+            % wait before resetting trigger
+            WaitSecs(trigger_delay); 
+            %reset the parallel port
+            sendparallelbyte(0);
+        end
+        
+        audio_config.playTime = playTime;
         
     case 'abort'
         
@@ -178,6 +184,15 @@ switch action
 %             % reset the parallel port
 %             sendparallelbyte(0)
 %         end
+
+    case 'close'
+        
+        % WORK IN PROGRESS
+        
+        pahandle = audio_config.pahandle;
+        
+        PsychPortAudio('Close', pahandle);
+
         
 end
 
