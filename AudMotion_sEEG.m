@@ -232,7 +232,7 @@ for iEvent = 1:numEvents
         s_out(2,:) = Sound(2,:); % right earphone
         s_out(3,:) = trig_pulse; % trigger pulse
         
-        PsychPortAudio('FillBuffer',pahandle,s_out);                        
+        PsychPortAudio('FillBuffer',pahandle, s_out);                        
     end
     
     
