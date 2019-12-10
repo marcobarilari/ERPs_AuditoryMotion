@@ -30,13 +30,15 @@ function [audio_config] = triggerSend(action, device, audio_config)
 
 
 %% Parameters
-% number of audio channel used
-dev_n_channels = 4;
-
 % trigger values for regular EEG
-trigger.start = 1;
-trigger.abort = 2;
-trigger.resp = 3;
+trigger.resp = 10;
+trigger.abort = 20;
+% 1    rms_static_1s
+% 2    rms_mot_LR_1s
+% 3    rms_mot_RL_1s
+% 4    rms_static_2s
+% 5    rms_mot_LR_2s
+% 6    rms_mot_RL_2s
 
 % wait time before sending trigger and resetting it
 trigger_delay = 0.1;
@@ -72,11 +74,7 @@ switch action
         
         
         if any(strcmp(device,{'trial','eeg'}))
-            
-%             if strcmp(device,'eeg')
-%                 openparallelport('D010');
-%             end
-            
+            % number of audio channel used
             dev_n_channels = 2;
             
             pahandle = PsychPortAudio('Open', [], [], 3, freq, dev_n_channels);
@@ -86,6 +84,9 @@ switch action
           
             
         elseif any(strcmp(device,{'RME_RCAtrig'}))
+            
+            % number of audio channel used
+            dev_n_channels = 4;
             
             % add the libraries necessary for the sound card
             addpath(genpath(fullfile(pwd, 'lib')));
@@ -152,15 +153,14 @@ switch action
         
     case 'start'
         
-        % WORK IN PROGRESS
-        
         pahandle = audio_config.pahandle;
         
         playTime = PsychPortAudio('Start', pahandle, repetitions, startCue, waitForDeviceStart);
         
         if any(strcmp(device,{'eeg'}))
+            fprintf(1, '  Sent trigger: %i\n', audio_config.this_trigger);
             % send the trigger 
-            sendparallelbyte(trigger.start);
+            sendparallelbyte(audio_config.this_trigger);
             % wait before resetting trigger
             WaitSecs(trigger_delay); 
             %reset the parallel port
@@ -170,8 +170,6 @@ switch action
         audio_config.playTime = playTime;
         
     case 'abort'
-        
-        % WORK IN PROGRESS
         
         pahandle = audio_config.pahandle;
         
@@ -186,20 +184,17 @@ switch action
         
     case 'resp' 
         
-        % WORK IN PROGRESS
-        
         if strcmp(device,'eeg')
+            fprintf(1, '  Sent trigger: %i\n', trigger.resp);
             % send the response trigger
-            sendparallelbyte(trigger.resp);
+            sendparallelbyte(trigger.resp); 
             WaitSecs(trigger_delay);
             % reset the parallel port
-            sendparallelbyte(0)
+            sendparallelbyte(0);
         end
 
     case 'close'
-        
-        % WORK IN PROGRESS
-        
+
         pahandle = audio_config.pahandle;
         
         PsychPortAudio('Close', pahandle);
