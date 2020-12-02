@@ -13,35 +13,36 @@
 % when the response is given while the sound is played, it can be
 % understood in the logfile, because of the time stamp.
 
-clear all;  %#ok<CLALL>
+clear
 clc
+PsychPortAudio('Close');
 
 tic
 
-%% CHANGE ME IF IT'S NEEDED
+%% set trial or real experiment
+device = 'eeg'; % any sound card, triggers through parallel port
+% device = 'RME_RCAtrig'; % works with RME sound card and sends one trigger value through RCA cable (trigger box)
+% device = 'trial'; % any sound card, no triggers (parallel port not open)
 
-%adjust the amp according to the participant
+fprintf('Connected Device is %s \n\n',device);
+
+% adjust the amp according to the participant
 % multiply the audio by this value to decrease the volume
 new_amp = 0.2;
 
 %after everything is ready, wait a bit to initiate sound playing loop
 Init_pause = 3;
 
-%%
-%% set trial or real experiment
 
-
-% device = 'eeg'; % any sound card, triggers through parallel port
-% device = 'RME_RCAtrig'; % works with RME sound card and sends one trigger value through RCA cable (trigger box)
-device = 'trial'; % any sound card, no triggers (parallel port not open)
-
-
-
-fprintf('Connected Device is %s \n\n',device);
 %% Start me up
-% get the subject Name
-%SubjName = input('\nSubject Name: ','s');
+SubjName = 'test';
+
 Run = input('\nrun n.: ','s');
+if isempty(Run)
+    Run=99;
+end
+
+task_id = 'AudERPs';
 
 % here is prompt a multiverse scenario in witch you can choos n. of trials
 % and therefore the length of the experiment
@@ -54,15 +55,6 @@ fprintf('\n')
 
 
 %% Create log output(s)
-%if isempty(SubjName)
-    SubjName = 'test';
-%end
-if isempty(Run)
-    Run=99;
-end
-
-%log filename for .tsv file function
-task_id = 'AudERPs';
 
 %logfile name for .tsv (for this script only)
 DateFormat = 'yyyy_mm_dd_HH_MM';
@@ -85,10 +77,7 @@ fprintf(fid, 'SubjID\tExp_trial\tCondition\tSoundfile\tTarget\tTrigger\tISI\tEve
 fprintf('Auditory ERPs \n\n')
 
 %% Experiment Parametes
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 freq = 44100;
-
-audio_config.freq = freq;
 
 switch str2num(expLength)
     
@@ -114,7 +103,7 @@ jitter = rand(1,numEvents);
 % a vector of interstimulus intervals for each event
 ISI = 1 + jitter;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %% Experimental Design
 
 % pseudorandomized events order: 2 MOTION + 1 static + 10% of targers
@@ -143,14 +132,6 @@ condition = {...
 
 isTarget = [0 0 0 1 1 1];
 
-
-%% Open parallel port
-if strcmp(device,'eeg')
-    openparallelport('D010');
-%elseif any(strcmp(device,{'trial','RME_RCAtrig'}))
-
-end
-
 %% InitializePsychAudio;
 
 % load all the sounds & lower the amplitude of the sounds
@@ -165,17 +146,19 @@ for icon = 1:numcondition
     
 end
 
-
 InitializePsychSound(1);
 
 % open audio port
+audio_config.freq = freq;
 audio_config.sound =  SoundData{1}; % test sound
+% Open parallel port
 audio_config = triggerSend('open', device, audio_config);
 
 
 %% Experiment Start
-% 
-% 
+
+KbName('UnifyKeyNames')
+
 % Wait for the "SPACE" key with KbCheck in the subfuction.
 pressSpace4me();
 
@@ -185,8 +168,8 @@ experimentStartTime = GetSecs();
 %initial pause
 WaitSecs(Init_pause);
 
-%% Loop starts
 
+%% Loop starts
 eventOnsets =       zeros(1,numEvents);
 eventEnds =         zeros(1,numEvents);
 eventDurations =    zeros(1,numEvents);
@@ -224,6 +207,7 @@ for iEvent = 1:numEvents
     % start sound and send the trigger
     trigger = Event_order(iEvent);
     
+    audio_config.this_trigger = trigger;
     audio_config = triggerSend('start', device, audio_config);
     
     playTime(1,iEvent) = audio_config.playTime ;
@@ -231,17 +215,22 @@ for iEvent = 1:numEvents
     % log the start time of the sound
     timeLogger(iEvent).startTime = playTime(1,iEvent) - experimentStartTime; %#ok<*SAGROW>
     
-    
     % wait for the ISI and register the responseKey
     while (GetSecs-(playTime(1,iEvent)+(length(Sound)/freq))) <= (ISI(iEvent))
+        
+        status = PsychPortAudio('GetStatus', audio_config.pahandle);
+        if ~status.Active
+            PsychPortAudio('Stop', audio_config.pahandle);
+        end
         
         [keyIsDown, secs, keyCode] = KbCheck(-1);
         
         if keyIsDown
             
-            
             responseKey = KbName(find(keyCode));
             responseTime = secs - experimentStartTime;
+            
+            audio_config = triggerSend('resp', device, audio_config);
             
             % ecs key press - stop playing the sounds//script
             if strcmp(responseKey,'DELETE')==1
@@ -252,20 +241,6 @@ for iEvent = 1:numEvents
                 audio_config = triggerSend('abort', device, audio_config);
                 
                 return
-                
-            else
-                % this part is only relevant for trigger send to EEG the
-                % usual way and not via the sound card
-                
-                
-                
-                
-                
-                %[audio_config] = triggerSend('abort', device, audio_config);
-                
-                
-                
-                
                 
             end
             
@@ -292,14 +267,19 @@ for iEvent = 1:numEvents
     
     %logfile incase the script stopped
     fprintf(fid,'%s\t %d\t %s\t %s\t %d\t %d\t %f\t %f\t %f\t %f\t %s\t %f\n',...
-        SubjName, iEvent, string(condition(Event_order(iEvent))), string(soundfiles(Event_order(iEvent))), ...
+        SubjName, iEvent, condition{Event_order(iEvent)}, soundfiles{Event_order(iEvent)}, ...
         isTarget(Event_order(iEvent)), trigger, ISI(iEvent), ...
         timeLogger(iEvent).startTime, eventEnds(iEvent), eventDurations(iEvent), ...
         responseKey, responseTime);
     
-
+    fprintf(1,'%s\t %d\t %s\t %s\t %d\t %d\t %f\t %f\t %f\t %f\t %s\t %f\n',...
+        SubjName, iEvent, condition{Event_order(iEvent)}, soundfiles{Event_order(iEvent)}, ...
+        isTarget(Event_order(iEvent)), trigger, ISI(iEvent), ...
+        timeLogger(iEvent).startTime, eventEnds(iEvent), eventDurations(iEvent), ...
+        responseKey, responseTime);
+    
+    
 end
-
 
 
 %% Save the results ('names','onsets','ends','duration') of each block
@@ -332,11 +312,13 @@ responseTime = responsesTime';
     response, ...
     responseTime);
 
+
 %% Close the port
 audio_config = triggerSend('close', device, audio_config);
 
-% Take the total exp time to printout 
+% Take the total exp time to printout
 Experiment_duration = GetSecs - experimentStartTime;
+
 
 %% Save a mat Log file
 % Onsets & durations are saved in seconds.
@@ -350,6 +332,7 @@ fclose(fid);
 
 %take the last time
 expTime = toc;
+
 
 %% print the duration of the exp
 fprintf('\nSequence IS OVER!!\n');
